@@ -6,11 +6,11 @@ function Reactor (subject, feature) {
   EventEmitter.call(this)
 
   this._subject = subject
+  this._feature = feature
   this._emit = this.emit.bind(this, feature)
-  this._emit._isReactorEmitterFunction = true // marking the internal handler
 
   if (this._subject instanceof EventEmitter) { // or DOM event emitter!
-    this._subject.addEventListener(feature, this._emit.bind(this))
+    this._subject.addListener(feature, this._emit)
   } else { // setup setter and constructor traps with the Proxy API
 
   }
@@ -19,9 +19,13 @@ function Reactor (subject, feature) {
 inherits(Reactor, EventEmitter)
 
 Reactor.prototype.delay = function (ms) {
-  // replace subject's registered listener._isReactorEmitterFunction with
-  // a composite function that incorporates the previous listener
-
+  var prevEmitterFunction = this._emit
+  function nextEmitterFunction (...args) {
+    setTimeout(prevEmitterFunction, ms, ...args)
+  }
+  this._subject.removeListener(this._feature, prevEmitterFunction)
+  this._subject.addListener(this._feature, nextEmitterFunction)
+  this._emit = nextEmitterFunction
 }
 
 Reactor.prototype.ntimes = function (n) {
