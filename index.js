@@ -1,22 +1,44 @@
 var EventEmitter = require('events').EventEmitter
 var inherits = require('util').inherits
+var promisify = require('util').promisify
+
+var _AsyncFunction = (async function () {}).constructor
 
 function Reactor (subject, feature) {
   if (!(this instanceof Reactor)) return new Reactor(subject, feature)
   EventEmitter.call(this)
 
-  this._subject = subject
-  this._feature = feature
-  this._emitData = this.emit.bind(this, feature)
-  this._emitError = this.emit.bind(this, 'error')
+  if (subject instanceof Function || subject instanceof Promise) {
+    this._feature = 'resolved'
+    this._failure = 'rejected'
+  } else if (!(subject instanceof Object)) {
+    throw new Error('subject must inherit from Object')
+  } else if (feature) {
+    this._feature = feature
+    this._failure = 'error'
+  } else if (!feature) {
+    throw new Error('feature (event or property name) required')
+  }
 
-  if (this._subject instanceof EventEmitter) {
-    // or DOM event emitter!
-    this._subject.addListener(feature, this._emitData)
-    this._subject.addListener('error', this._emitError)
-  } else if (this._subject instanceof Promise) {
-    // or if Promise: promiseToEmitter, listen to rejected instead of error
+  this._emitData = this.emit.bind(this, this._feature)
+  this._emitError = this.emit.bind(this, this._failure)
 
+  if (subject instanceof EventEmitter) { // or DOM event emitter!
+    this._subject = subject
+    this._subject.addListener(this._feature, this._emitData)
+    this._subject.addListener(this._failure, this._emitError)
+  } else if (subject instanceof Promise) {
+    this._subject = promiseToEmitter(subject)
+    this._subject.addListener(this._feature, this._emitData)
+    this._subject.addListener(this._failure, this._emitError)
+  } else if (subject instanceof _AsyncFunction) {
+    this._subject = promiseToEmitter(subject())
+    this._subject.addListener(this._feature, this._emitData)
+    this._subject.addListener(this._failure, this._emitError)
+  } else if (subject instanceof Function) {
+    this._subject = promiseToEmitter(promisify(subject)())
+    this._subject.addListener(this._feature, this._emitData)
+    this._subject.addListener(this._failure, this._emitError)
   } else { // setup setter and constructor traps with the Proxy API
 
   }
@@ -34,7 +56,7 @@ Reactor.prototype.delay = function (ms) {
   this._emitData = nextEmitterFunction
 }
 
-Reactor.prototype.ntimes = function (n) {
+Reactor.prototype.max = function (n) {
 
 }
 
