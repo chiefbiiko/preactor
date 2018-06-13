@@ -19,8 +19,6 @@ function Reactor (subject, feature) {
   if (subject instanceof Function || subject instanceof Promise) {
     this._feature = 'resolved'
     this._failure = 'rejected'
-  } else if (!(subject instanceof Object)) {
-    throw new Error('subject must inherit from Object')
   } else if (feature) {
     this._feature = feature
     this._failure = 'error'
@@ -42,7 +40,7 @@ function Reactor (subject, feature) {
   } else {
     throw new Error('unsupported subject type')
   }
-  
+
   this._subject.addListener(this._feature, this._emitData)
   this._subject.addListener(this._failure, this._emitError)
 }
