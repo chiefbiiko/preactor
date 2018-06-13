@@ -2,7 +2,7 @@ var tape = require('tape')
 var EventEmitter = require('events').EventEmitter
 var Reactor = require('./index')
 
-tape('delay', function (t) {
+tape('simple transducer - Reactor.prototype.delay', function (t) {
   var emitter = new EventEmitter()
   var reactor = new Reactor(emitter, 'fraud')
   var reacted = false
@@ -34,4 +34,17 @@ tape('always passin error events', function (t) {
     t.end()
   })
   emitter.emit('error')
+})
+
+tape('takin a promise', function (t) {
+  function makePromise () {
+    return new Promise(function (resolve, reject) {
+      setTimeout(resolve, 100, 419)
+    })
+  }
+  var reactor = new Reactor(makePromise())
+  reactor.once('resolved', function (motto) {
+    t.pass('all we do is ' + motto)
+    t.end()
+  })
 })

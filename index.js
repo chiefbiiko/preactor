@@ -4,6 +4,14 @@ var promisify = require('util').promisify
 
 var _AsyncFunction = (async function () {}).constructor
 
+function promiseToEmitter (promise) { // require once published
+  var emitter = new EventEmitter()
+  promise
+    .then(emitter.emit.bind(emitter, 'resolved'))
+    .catch(emitter.emit.bind(emitter, 'rejected'))
+  return emitter
+}
+
 function Reactor (subject, feature) {
   if (!(this instanceof Reactor)) return new Reactor(subject, feature)
   EventEmitter.call(this)
