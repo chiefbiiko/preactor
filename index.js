@@ -33,23 +33,18 @@ function Reactor (subject, feature) {
 
   if (subject instanceof EventEmitter) { // or DOM event emitter!
     this._subject = subject
-    this._subject.addListener(this._feature, this._emitData)
-    this._subject.addListener(this._failure, this._emitError)
   } else if (subject instanceof Promise) {
     this._subject = promiseToEmitter(subject)
-    this._subject.addListener(this._feature, this._emitData)
-    this._subject.addListener(this._failure, this._emitError)
   } else if (subject instanceof _AsyncFunction) {
     this._subject = promiseToEmitter(subject())
-    this._subject.addListener(this._feature, this._emitData)
-    this._subject.addListener(this._failure, this._emitError)
   } else if (subject instanceof Function) {
     this._subject = promiseToEmitter(promisify(subject)())
-    this._subject.addListener(this._feature, this._emitData)
-    this._subject.addListener(this._failure, this._emitError)
-  } else { // setup setter and constructor traps with the Proxy API
-
+  } else {
+    throw new Error('unsupported subject type')
   }
+  
+  this._subject.addListener(this._feature, this._emitData)
+  this._subject.addListener(this._failure, this._emitError)
 }
 
 inherits(Reactor, EventEmitter)
