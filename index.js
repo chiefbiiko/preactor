@@ -3,6 +3,7 @@ var inherits = require('util').inherits
 var promisify = require('util').promisify
 
 var _AsyncFunction = (async function () {}).constructor
+var _EventTarget = !process ? EventTarget : function Noop () {}
 
 function promiseToEmitter (promise) { // require once published
   var emitter = new EventEmitter()
@@ -16,7 +17,11 @@ function Reactor (subject, eventName) {
   if (!(this instanceof Reactor)) return new Reactor(subject, eventName)
   EventEmitter.call(this)
 
-  if (subject instanceof EventEmitter) { // or DOM event emitter!
+  if (subject instanceof EventEmitter) {
+    this._subject = subject
+  } else if (subject instanceof _EventTarget) {
+    subject.addListener = subject.addEventListener
+    subject.removeListener = subject.removeEventListener
     this._subject = subject
   } else if (subject instanceof Promise) {
     this._subject = promiseToEmitter(subject)
@@ -25,7 +30,7 @@ function Reactor (subject, eventName) {
   } else if (subject instanceof Function) {
     this._subject = promiseToEmitter(promisify(subject)())
   } else {
-    throw new Error('unsupported subject type')
+    throw new TypeError('unsupported subject type')
   }
 
   if (subject instanceof Function || subject instanceof Promise) {
@@ -33,7 +38,7 @@ function Reactor (subject, eventName) {
   } else if (eventName) {
     this._eventName = eventName
   } else if (!eventName) {
-    throw new Error('event name required')
+    throw new TypeError('event name required')
   }
 
   this._failure = 'error'
@@ -46,7 +51,7 @@ function Reactor (subject, eventName) {
 inherits(Reactor, EventEmitter)
 
 Reactor.prototype.debounce = function (ms, argumentReducer) {
-  
+
 }
 
 Reactor.prototype.delay = function (ms) {
