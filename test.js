@@ -44,7 +44,7 @@ tape('takin a promise', function (t) {
   }
   var reactor = new Reactor(makePromise())
   reactor.once('resolved', function (motto) {
-    t.pass('all we do is ' + motto)
+    t.is(motto, 419, 'all we do is ' + motto)
     t.end()
   })
 })

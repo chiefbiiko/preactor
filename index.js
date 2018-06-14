@@ -12,22 +12,9 @@ function promiseToEmitter (promise) { // require once published
   return emitter
 }
 
-function Reactor (subject, feature) {
-  if (!(this instanceof Reactor)) return new Reactor(subject, feature)
+function Reactor (subject, eventName) {
+  if (!(this instanceof Reactor)) return new Reactor(subject, eventName)
   EventEmitter.call(this)
-
-  if (subject instanceof Function || subject instanceof Promise) {
-    this._feature = 'resolved'
-    this._failure = 'rejected'
-  } else if (feature) {
-    this._feature = feature
-    this._failure = 'error'
-  } else if (!feature) {
-    throw new Error('feature (event or property name) required')
-  }
-
-  this._emitData = this.emit.bind(this, this._feature)
-  this._emitError = this.emit.bind(this, this._failure)
 
   if (subject instanceof EventEmitter) { // or DOM event emitter!
     this._subject = subject
@@ -41,20 +28,39 @@ function Reactor (subject, feature) {
     throw new Error('unsupported subject type')
   }
 
-  this._subject.addListener(this._feature, this._emitData)
+  if (subject instanceof Function || subject instanceof Promise) {
+    this._eventName = eventName || 'resolved'
+  } else if (eventName) {
+    this._eventName = eventName
+  } else if (!eventName) {
+    throw new Error('event name required')
+  }
+
+  this._failure = 'error'
+  this._emitData = this.emit.bind(this, this._eventName)
+  this._emitError = this.emit.bind(this, this._failure)
+  this._subject.addListener(this._eventName, this._emitData)
   this._subject.addListener(this._failure, this._emitError)
 }
 
 inherits(Reactor, EventEmitter)
 
+Reactor.prototype.debounce = function (ms, argumentReducer) {
+  
+}
+
 Reactor.prototype.delay = function (ms) {
-  var prevEmitterFunction = this._emitData
-  function nextEmitterFunction (...args) {
-    setTimeout(prevEmitterFunction, ms, ...args)
+  var prevEmitData = this._emitData
+  function nextEmitData (...args) {
+    setTimeout(prevEmitData, ms, ...args)
   }
-  this._subject.removeListener(this._feature, prevEmitterFunction)
-  this._subject.addListener(this._feature, nextEmitterFunction)
-  this._emitData = nextEmitterFunction
+  this._subject.removeListener(this._eventName, prevEmitData)
+  this._subject.addListener(this._eventName, nextEmitData)
+  this._emitData = nextEmitData
+}
+
+Reactor.prototype.mask = function (mask) {
+
 }
 
 Reactor.prototype.max = function (n) {
