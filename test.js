@@ -51,9 +51,9 @@ tape('takin a promise', function (t) {
 })
 
 tape('passin a promise and a custom resolved-event name', function (t) {
-  var reactor = new Reactor(makePromise('fraud'), 'customResolvedEventName')
-  reactor.once('customResolvedEventName', function (fraud) {
-    t.pass('custom pass thru')
+  var reactor = new Reactor(makePromise(Infinity), 'customResolvedEventName')
+  reactor.once('customResolvedEventName', function (balance) {
+    t.is(balance, Infinity, 'balance is ' + balance)
     t.end()
   })
 })

@@ -33,12 +33,12 @@ function Reactor (subject, eventName) {
     throw new TypeError('unsupported subject type')
   }
 
-  if (subject instanceof Function || subject instanceof Promise) {
-    this._eventName = eventName || 'resolved'
-  } else if (eventName) {
+  if ((subject instanceof Function) || (subject instanceof Promise)) {
+    this._eventName = typeof eventName === 'string' ? eventName : 'resolved'
+  } else if (typeof eventName === 'string') {
     this._eventName = eventName
-  } else if (!eventName) {
-    throw new TypeError('event name required')
+  } else {
+    throw new TypeError('event name string required')
   }
 
   this._failure = 'error'
