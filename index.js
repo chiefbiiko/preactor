@@ -5,11 +5,11 @@ var promisify = require('util').promisify
 var _AsyncFunction = (async function () {}).constructor
 var _EventTarget = !process ? EventTarget : function Noop () {}
 
-function promiseToEmitter (promise) { // require once published
+function promiseToEmitter (promise, eventName, errorName) { // require once pub
   var emitter = new EventEmitter()
   promise
-    .then(emitter.emit.bind(emitter, 'resolved'))
-    .catch(emitter.emit.bind(emitter, 'rejected'))
+    .then(emitter.emit.bind(emitter, eventName || 'resolved'))
+    .catch(emitter.emit.bind(emitter, errorName || 'rejected'))
   return emitter
 }
 
@@ -17,21 +17,7 @@ function Reactor (subject, eventName) {
   if (!(this instanceof Reactor)) return new Reactor(subject, eventName)
   EventEmitter.call(this)
 
-  if (subject instanceof EventEmitter) {
-    this._subject = subject
-  } else if (subject instanceof _EventTarget) {
-    subject.addListener = subject.addEventListener
-    subject.removeListener = subject.removeEventListener
-    this._subject = subject
-  } else if (subject instanceof Promise) {
-    this._subject = promiseToEmitter(subject)
-  } else if (subject instanceof _AsyncFunction) {
-    this._subject = promiseToEmitter(subject())
-  } else if (subject instanceof Function) {
-    this._subject = promiseToEmitter(promisify(subject)())
-  } else {
-    throw new TypeError('unsupported subject type')
-  }
+  this._errorName = 'error'
 
   if ((subject instanceof Function) || (subject instanceof Promise)) {
     this._eventName = typeof eventName === 'string' ? eventName : 'resolved'
@@ -41,11 +27,28 @@ function Reactor (subject, eventName) {
     throw new TypeError('event name string required')
   }
 
-  this._failure = 'error'
+  if (subject instanceof EventEmitter) {
+    this._subject = subject
+  } else if (subject instanceof _EventTarget) {
+    subject.addListener = subject.addEventListener
+    subject.removeListener = subject.removeEventListener
+    this._subject = subject
+  } else if (subject instanceof Promise) {
+    this._subject = promiseToEmitter(subject, this._eventName, this._errorName)
+  } else if (subject instanceof _AsyncFunction) {
+    var promise = subject()
+    this._subject = promiseToEmitter(promise, this._eventName, this._errorName)
+  } else if (subject instanceof Function) {
+    var promise = promisify(subject)()
+    this._subject = promiseToEmitter(promise, this._eventName, this._errorName)
+  } else {
+    throw new TypeError('unsupported subject type')
+  }
+
   this._emitData = this.emit.bind(this, this._eventName)
-  this._emitError = this.emit.bind(this, this._failure)
+  this._emitError = this.emit.bind(this, this._errorName)
   this._subject.addListener(this._eventName, this._emitData)
-  this._subject.addListener(this._failure, this._emitError)
+  this._subject.addListener(this._errorName, this._emitError)
 }
 
 inherits(Reactor, EventEmitter)
