@@ -17,8 +17,6 @@ function Reactor (subject, eventName) {
   if (!(this instanceof Reactor)) return new Reactor(subject, eventName)
   EventEmitter.call(this)
 
-  this._errorName = 'error'
-
   if ((subject instanceof Function) || (subject instanceof Promise)) {
     this._eventName = typeof eventName === 'string' ? eventName : 'resolved'
   } else if (typeof eventName === 'string') {
@@ -26,6 +24,10 @@ function Reactor (subject, eventName) {
   } else {
     throw new TypeError('event name string required')
   }
+
+  this._errorName = 'error'
+  this._emitData = this.emit.bind(this, this._eventName)
+  this._emitError = this.emit.bind(this, this._errorName)
 
   if (subject instanceof EventEmitter) {
     this._subject = subject
@@ -45,19 +47,17 @@ function Reactor (subject, eventName) {
     throw new TypeError('unsupported subject type')
   }
 
-  this._emitData = this.emit.bind(this, this._eventName)
-  this._emitError = this.emit.bind(this, this._errorName)
   this._subject.addListener(this._eventName, this._emitData)
   this._subject.addListener(this._errorName, this._emitError)
 }
 
 inherits(Reactor, EventEmitter)
 
-Reactor.prototype.debounce = function (ms, argumentReducer) {
+Reactor.prototype.debounce = function debounce (ms, argumentReducer) {
 
 }
 
-Reactor.prototype.delay = function (ms) {
+Reactor.prototype.delay = function delay (ms) {
   var prevEmitData = this._emitData
   function nextEmitData (...args) {
     setTimeout(prevEmitData, ms, ...args)
@@ -67,11 +67,11 @@ Reactor.prototype.delay = function (ms) {
   this._emitData = nextEmitData
 }
 
-Reactor.prototype.mask = function (mask) {
+Reactor.prototype.mask = function mask (mask) {
 
 }
 
-Reactor.prototype.max = function (n) {
+Reactor.prototype.max = function max (n) {
 
 }
 
