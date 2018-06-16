@@ -19,10 +19,10 @@ tape('simple transducer - Reactor.prototype.delay', function (t) {
   emitter.emit('fraud')
   t.false(reacted, 'not reacted yet')
   setTimeout(function () {
-    t.false(reacted, 'still not reacted yet')
+    t.false(reacted, 'still not reacted')
   }, 419)
   setTimeout(function () {
-    t.false(reacted, 'still not reacted yet')
+    t.false(reacted, 'still still not reacted')
   }, 750)
   setTimeout(function () {
     t.true(reacted, 'delayed reaction')
@@ -56,4 +56,40 @@ tape('passin a promise and a custom resolved-event name', function (t) {
     t.is(balance, Infinity, 'balance is ' + balance)
     t.end()
   })
+})
+
+tape('transducer chainin', function (t) {
+  var reacted = false
+  var emitter = new EventEmitter()
+
+  new Reactor(emitter, 'fraud')
+    .delay(36)
+    .delay(44)
+    .once('fraud', function () {
+      reacted = true
+    })
+
+  emitter.emit('fraud')
+  t.false(reacted, 'not reacted yet')
+  setTimeout(function () {
+    t.false(reacted, 'still not reacted')
+  }, 50)
+  setTimeout(function () {
+    t.true(reacted, 'reactor reacted')
+    t.end()
+  }, 100)
+})
+
+tape('throws on missing event name with event emitters', function (t) {
+  t.throws(function () {
+    new Reactor(new EventEmitter())
+  }, 'event name string required')
+  t.end()
+})
+
+tape('throws on non-async subject', function (t) {
+  t.throws(function () {
+    new Reactor(419, 'fraud')
+  }, 'unsupported subject type')
+  t.end()
 })

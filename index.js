@@ -57,14 +57,16 @@ Reactor.prototype.debounce = function debounce (ms, argumentReducer) {
 
 }
 
-Reactor.prototype.delay = function delay (ms) {
+Reactor.prototype.delay = function delay (ms, unref) {
   var prevEmitData = this._emitData
   function nextEmitData (...args) {
-    setTimeout(prevEmitData, ms, ...args)
+    var timeout = setTimeout(prevEmitData, ms, ...args)
+    if (unref && timeout.unref) timeout.unref()
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
   this._emitData = nextEmitData
+  return this
 }
 
 Reactor.prototype.mask = function mask (mask) {
