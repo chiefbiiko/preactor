@@ -3,7 +3,7 @@ var inherits = require('util').inherits
 var promisify = require('util').promisify
 
 var _AsyncFunction = (async function () {}).constructor
-var _EventTarget = !process ? EventTarget : function Noop () {}
+// var _EventTarget = !process ? EventTarget : function Noop () {}
 
 function promiseToEmitter (promise, eventName, errorName) { // require once pub
   var emitter = new EventEmitter()
@@ -11,6 +11,20 @@ function promiseToEmitter (promise, eventName, errorName) { // require once pub
     .then(emitter.emit.bind(emitter, eventName || 'resolved'))
     .catch(emitter.emit.bind(emitter, errorName || 'rejected'))
   return emitter
+}
+
+function problyEventEmitter (x) {
+  return x &&
+    typeof x.addListener === 'function' &&
+    typeof x.removeListener === 'function' &&
+    typeof x.emit === 'function'
+}
+
+function problyEventTarget (x) {
+  return x &&
+    typeof x.addEventListener === 'function' &&
+    typeof x.removeEventListener === 'function' &&
+    typeof x.dispatchEvent === 'function'
 }
 
 function Reactor (subject, eventName) {
@@ -29,9 +43,9 @@ function Reactor (subject, eventName) {
   this._emitData = this.emit.bind(this, this._eventName)
   this._emitError = this.emit.bind(this, this._errorName)
 
-  if (subject instanceof EventEmitter) {
+  if (problyEventEmitter(subject)) {
     this._subject = subject
-  } else if (subject instanceof _EventTarget) {
+  } else if (problyEventTarget(subject)) {
     subject.addListener = subject.addEventListener
     subject.removeListener = subject.removeEventListener
     this._subject = subject
