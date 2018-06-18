@@ -83,13 +83,89 @@ tape('transducer chainin', function (t) {
 tape('throws on missing event name with event emitters', function (t) {
   t.throws(function () {
     new Reactor(new EventEmitter())
-  }, 'event name string required')
+  }, TypeError, 'event name string required')
   t.end()
 })
 
 tape('throws on non-async subject', function (t) {
   t.throws(function () {
     new Reactor(419, 'fraud')
-  }, 'unsupported subject type')
+  }, TypeError, 'unsupported subject type')
+  t.end()
+})
+
+tape('maskin with Reactor.prototype.mask', function (t) {
+  var emitter = new EventEmitter()
+  var called = 0
+  new Reactor(emitter, 'masked')
+    .mask([ 0, 1 ], false)
+    .on('masked', function (num) {
+      called++
+      t.is(num, 2, 'only got the second emit')
+      t.end()
+    })
+  emitter.emit('masked', 1)
+  emitter.emit('masked', 2)
+})
+
+tape('maskin with recyclin via Reactor.prototype.mask', function (t) {
+  var emitter = new EventEmitter()
+  var called = 0
+  new Reactor(emitter, 'masked')
+    .mask([ false, true ], true)
+    .on('masked', function (num) {
+      called++
+      if (called === 1) {
+        t.is(num, 2, 'got the second emit...')
+      } else if (called === 2) {
+        t.is(num, 4, '...and got the fourth emit')
+        t.end()
+      }
+    })
+  emitter.emit('masked', 1)
+  emitter.emit('masked', 2)
+  emitter.emit('masked', 3)
+  emitter.emit('masked', 4)
+})
+
+tape('maskin incorrectly with Reactor.prototype.mask', function (t) {
+  var emitter = new EventEmitter()
+  var reactor = new Reactor(emitter, 'masked')
+  t.throws(function () {
+    reactor.mask({ 1: true, 2: false })
+  }, TypeError, 'mask is not an array')
+  t.end()
+})
+
+tape('maxin with Reactor.prototype.max', function (t) {
+  t.plan(3)
+  var emitter = new EventEmitter()
+  var reactor = new Reactor(emitter, 'maxed')
+  var count = 0, i = 0
+  reactor
+    .max(3)
+    .on('maxed', function () {
+      t.pass('got the listener called')
+    })
+  emitter.emit('maxed')
+  emitter.emit('maxed')
+  emitter.emit('maxed')
+  emitter.emit('maxed')
+  emitter.emit('maxed')
+})
+
+tape('errorin pt 1 with Reactor.prototype.max', function (t) {
+  t.throws(function () {
+    new Reactor(new EventEmitter(), 'maxed')
+      .max('5')
+  }, TypeError, 'n is not an unsigned integer')
+  t.end()
+})
+
+tape('errorin pt 2 with Reactor.prototype.max', function (t) {
+  t.throws(function () {
+    new Reactor(new EventEmitter(), 'maxed')
+      .max(NaN)
+  }, TypeError, 'n is not an unsigned integer')
   t.end()
 })

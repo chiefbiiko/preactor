@@ -1,37 +1,17 @@
 var EventEmitter = require('events').EventEmitter
 var inherits = require('util').inherits
-var promisify = require('util').promisify
-
-var _AsyncFunction = (async function () {}).constructor
-// var _EventTarget = !process ? EventTarget : function Noop () {}
-
-function promiseToEmitter (promise, eventName, errorName) { // require once pub
-  var emitter = new EventEmitter()
-  promise
-    .then(emitter.emit.bind(emitter, eventName || 'resolved'))
-    .catch(emitter.emit.bind(emitter, errorName || 'rejected'))
-  return emitter
-}
-
-function problyEventEmitter (x) {
-  return x &&
-    typeof x.addListener === 'function' &&
-    typeof x.removeListener === 'function' &&
-    typeof x.emit === 'function'
-}
-
-function problyEventTarget (x) {
-  return x &&
-    typeof x.addEventListener === 'function' &&
-    typeof x.removeEventListener === 'function' &&
-    typeof x.dispatchEvent === 'function'
-}
+var {
+  isUint,
+  problyEventEmitter,
+  problyEventTarget,
+  promiseToEmitter
+} = require('./utils')
 
 function Reactor (subject, eventName) {
   if (!(this instanceof Reactor)) return new Reactor(subject, eventName)
   EventEmitter.call(this)
 
-  if ((subject instanceof Function) || (subject instanceof Promise)) {
+  if (subject instanceof Promise) {
     this._eventName = typeof eventName === 'string' ? eventName : 'resolved'
   } else if (typeof eventName === 'string') {
     this._eventName = eventName
@@ -51,12 +31,6 @@ function Reactor (subject, eventName) {
     this._subject = subject
   } else if (subject instanceof Promise) {
     this._subject = promiseToEmitter(subject, this._eventName, this._errorName)
-  } else if (subject instanceof _AsyncFunction) {
-    var promise = subject()
-    this._subject = promiseToEmitter(promise, this._eventName, this._errorName)
-  } else if (subject instanceof Function) {
-    var promise = promisify(subject)()
-    this._subject = promiseToEmitter(promise, this._eventName, this._errorName)
   } else {
     throw new TypeError('unsupported subject type')
   }
@@ -83,12 +57,32 @@ Reactor.prototype.delay = function delay (ms, unref) {
   return this
 }
 
-Reactor.prototype.mask = function mask (mask) {
-
+Reactor.prototype.mask = function mask (mask, recycle) {
+  if (!Array.isArray(mask)) throw new TypeError('mask is not an array')
+  recycle = recycle !== false
+  var i = -1
+  var prevEmitData = this._emitData
+  function nextEmitData (...args) {
+    if (++i === mask.length && recycle) i = 0
+    if (mask[i]) prevEmitData(...args)
+  }
+  this._subject.removeListener(this._eventName, prevEmitData)
+  this._subject.addListener(this._eventName, nextEmitData)
+  this._emitData = nextEmitData
+  return this
 }
 
 Reactor.prototype.max = function max (n) {
-
+  if (!isUint(n)) throw new TypeError('n is not an unsigned integer')
+  var i = 0
+  var prevEmitData = this._emitData
+  function nextEmitData (...args) {
+    if (i++ < n) prevEmitData(...args)
+  }
+  this._subject.removeListener(this._eventName, prevEmitData)
+  this._subject.addListener(this._eventName, nextEmitData)
+  this._emitData = nextEmitData
+  return this
 }
 
 module.exports = Reactor
