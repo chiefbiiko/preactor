@@ -33,6 +33,14 @@ tape('simple transducer - Reactor.prototype.delay', function (t) {
   }, 1019)
 })
 
+tape('errorin with Reactor.prototype.delay', function (t) {
+  t.throws(function () {
+    new Reactor(new EventEmitter(), 'noop')
+      .delay(-1)
+  }, TypeError, 'ms is not an unsigned integer')
+  t.end()
+})
+
 tape('always passin error events', function (t) {
   t.timeoutAfter(100)
   var emitter = new EventEmitter()
@@ -147,37 +155,37 @@ tape('maskin incorrectly with Reactor.prototype.mask', function (t) {
   t.end()
 })
 
-tape('maxin with Reactor.prototype.max', function (t) {
+tape('limitin with Reactor.prototype.limit', function (t) {
   t.plan(3)
   var emitter = new EventEmitter()
-  var reactor = new Reactor(emitter, 'maxed')
+  var reactor = new Reactor(emitter, 'limited')
   var count = 0, i = 0
 
   reactor
-    .max(3)
-    .on('maxed', function () {
+    .limit(3)
+    .on('limited', function () {
       t.pass('got the listener called')
     })
 
-  emitter.emit('maxed')
-  emitter.emit('maxed')
-  emitter.emit('maxed')
-  emitter.emit('maxed')
-  emitter.emit('maxed')
+  emitter.emit('limited')
+  emitter.emit('limited')
+  emitter.emit('limited')
+  emitter.emit('limited')
+  emitter.emit('limited')
 })
 
-tape('errorin pt 1 with Reactor.prototype.max', function (t) {
+tape('errorin pt 1 with Reactor.prototype.limit', function (t) {
   t.throws(function () {
-    new Reactor(new EventEmitter(), 'maxed')
-      .max('5')
+    new Reactor(new EventEmitter(), 'limited')
+      .limit('5')
   }, TypeError, 'n is not an unsigned integer')
   t.end()
 })
 
-tape('errorin pt 2 with Reactor.prototype.max', function (t) {
+tape('errorin pt 2 with Reactor.prototype.limit', function (t) {
   t.throws(function () {
-    new Reactor(new EventEmitter(), 'maxed')
-      .max(NaN)
+    new Reactor(new EventEmitter(), 'limited')
+      .limit(NaN)
   }, TypeError, 'n is not an unsigned integer')
   t.end()
 })
@@ -212,6 +220,32 @@ tape('debouncin with Reactor.prototype.debounce', function (t) {
   setTimeout(function () {
       t.false(gotCalled, 'did not get called yet yet yet')
   }, 75)
+})
+
+tape('errorin with Reactor.prototype.debounce', function (t) {
+  t.throws(function () {
+    new Reactor(new EventEmitter(), 'noop')
+     .debounce(-1)
+  }, TypeError, 'ms is not an unsigned integer')
+  t.end()
+})
+
+tape('Reactor.prototype.debounce - argsReducer default demo', function (t) {
+  var emitter = new EventEmitter()
+  var reactor = new Reactor(emitter, 'debounced')
+  var gotCalled = false
+
+  reactor
+    .debounce(100)
+    .on('debounced', function (reducedNumber, reducedString) {
+      t.is(reducedNumber, 187, 'reducedNumber is ' + reducedNumber)
+      t.is(reducedString, 'c', 'reducedString is ' + reducedString)
+      t.end()
+    })
+
+  emitter.emit('debounced', 36, 'a')
+  emitter.emit('debounced', 44, 'b')
+  emitter.emit('debounced', 187, 'c')
 })
 
 tape('within - Reactor.prototype.within', function (t) {

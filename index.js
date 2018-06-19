@@ -2,6 +2,7 @@ var { EventEmitter } = require('events')
 var { inherits } = require('util')
 var {
   isUint,
+  latestWin,
   problyEventEmitter,
   problyEventTarget,
   promiseToEmitter
@@ -43,7 +44,9 @@ function Reactor (subject, eventName) {
 
 inherits(Reactor, EventEmitter)
 
-Reactor.prototype.debounce = function debounce (ms, argumentReducer) {
+Reactor.prototype.debounce = function debounce (ms, argsReducer) {
+  if (!isUint(ms)) throw new TypeError('ms is not an unsigned integer')
+  argsReducer = typeof argsReducer === 'function' ? argsReducer : latestWin
   debug('::debounce::')
   var prevEmitData = this._emitData
   var reducedArgs
@@ -52,7 +55,7 @@ Reactor.prototype.debounce = function debounce (ms, argumentReducer) {
     debug('nextEmitData', ...args)
     if (timeout) {
       debug('::timeout truthy::')
-      reducedArgs = argumentReducer(reducedArgs, args) // assure Array
+      reducedArgs = argsReducer(reducedArgs, args) // assure Array
       debug('reducedArgs', ...reducedArgs)
       clearTimeout(timeout)
       timeout = null
@@ -68,10 +71,26 @@ Reactor.prototype.debounce = function debounce (ms, argumentReducer) {
 }
 
 Reactor.prototype.delay = function delay (ms, unref) {
+  if (!isUint(ms)) throw new TypeError('ms is not an unsigned integer')
+  unref = !!unref
   var prevEmitData = this._emitData
   function nextEmitData (...args) {
     var timeout = setTimeout(prevEmitData, ms, ...args)
     if (unref && timeout.unref) timeout.unref()
+  }
+  this._subject.removeListener(this._eventName, prevEmitData)
+  this._subject.addListener(this._eventName, nextEmitData)
+  this._emitData = nextEmitData
+  return this
+}
+
+Reactor.prototype.limit = function limit (n) {
+  if (!isUint(n)) throw new TypeError('n is not an unsigned integer')
+  var i = 0
+  var prevEmitData = this._emitData
+  function nextEmitData (...args) {
+    if (i++ < n) prevEmitData(...args)
+    else null // unregisterin?
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
@@ -90,20 +109,6 @@ Reactor.prototype.mask = function mask (mask, recycle) {
     if (cur) prevEmitData(...args)
     if (!cur && !recycle) null // unregisterin?
    }
-  this._subject.removeListener(this._eventName, prevEmitData)
-  this._subject.addListener(this._eventName, nextEmitData)
-  this._emitData = nextEmitData
-  return this
-}
-
-Reactor.prototype.max = function max (n) {
-  if (!isUint(n)) throw new TypeError('n is not an unsigned integer')
-  var i = 0
-  var prevEmitData = this._emitData
-  function nextEmitData (...args) {
-    if (i++ < n) prevEmitData(...args)
-    else null // unregisterin?
-  }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
   this._emitData = nextEmitData

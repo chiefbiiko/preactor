@@ -1,5 +1,13 @@
 var EventEmitter = require('events').EventEmitter
 
+function isUint (x) {
+  return typeof x === 'number' && !Number.isNaN(x) && x % 1 === 0 && x >= 0
+}
+
+function latestWin (prev, args) {
+  return args
+}
+
 function promiseToEmitter (promise, eventName, errorName) { // require once pub
   var emitter = new EventEmitter()
   promise
@@ -22,12 +30,9 @@ function problyEventTarget (x) {
     typeof x.dispatchEvent === 'function'
 }
 
-function isUint (x) {
-  return typeof x === 'number' && !Number.isNaN(x) && x % 1 === 0 && x >= 0
-}
-
 module.exports = {
   isUint,
+  latestWin,
   problyEventEmitter,
   problyEventTarget,
   promiseToEmitter
