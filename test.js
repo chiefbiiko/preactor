@@ -341,3 +341,65 @@ tape('distinct - Preactor.prototype.distinct', function (t) {
   emitter.emit('distinct', 2)
   emitter.emit('distinct', 3)
 })
+
+tape('default accumulate - Preactor.prototype.accumulate', function (t) {
+  var emitter = new EventEmitter()
+  var preactor = new Preactor(emitter, 'accumulate')
+  var count = 0
+
+  preactor
+    .accumulate(2)
+    .on('accumulate', function (reducedNumber) {
+      t.is(reducedNumber, 1, 'reducedNumber is ' + reducedNumber)
+      t.end()
+    })
+
+  emitter.emit('accumulate', 1)
+  emitter.emit('accumulate', 1)
+})
+
+tape('custom argsReducer accumulate - Preactor.prototype.accumulate', function (t) {
+  var emitter = new EventEmitter()
+  var preactor = new Preactor(emitter, 'accumulate')
+  var count = 0
+
+  function argsReducer (accu = [ 0 ], args) { // should set a default accu
+    return [ accu[0] + args[0] ] // and return an array
+  }
+
+  preactor
+    .accumulate(2, false, argsReducer)
+    .on('accumulate', function (reducedNumber) {
+      t.is(reducedNumber, 2, 'reducedNumber is ' + reducedNumber)
+      t.end()
+    })
+
+  emitter.emit('accumulate', 1)
+  emitter.emit('accumulate', 1)
+})
+
+tape('repeat accumulate - Preactor.prototype.accumulate', function (t) {
+  var emitter = new EventEmitter()
+  var preactor = new Preactor(emitter, 'accumulate')
+  var count = 0
+
+  function argsReducer (accu = [ 0 ], args) { // should set a default accu
+    return [ accu[0] + args[0] ] // and return an array
+  }
+
+  preactor
+    .accumulate(2, true, argsReducer)
+    .on('accumulate', function (reducedNumber) {
+      count++
+      if (count === 1) t.is(reducedNumber, 2, 'reducedNumber #1')
+      if (count === 2) {
+        t.is(reducedNumber, 2, 'reducedNumber #2')
+        t.end()
+      }
+    })
+
+  emitter.emit('accumulate', 1)
+  emitter.emit('accumulate', 1)
+  emitter.emit('accumulate', 1)
+  emitter.emit('accumulate', 1)
+})

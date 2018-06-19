@@ -46,7 +46,33 @@ function Preactor (subject, eventName) {
 inherits(Preactor, EventEmitter)
 
 Preactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
-
+  if (!isUint(n)) throw new TypeError('n is not an unsigned integer')
+  if (typeof repeat === 'function') {
+    argsReducer = repeat
+    repeat = false
+  } else if (typeof argsReducer !== 'function') {
+    argsReducer = latestWin
+  }
+  repeat = !!repeat
+  var count = 0
+  var reducedArgs
+  var prevEmitData = this._emitData
+  function nextEmitData (...args) {
+    debug('args', args)
+    reducedArgs = argsReducer(reducedArgs, args)
+    debug('reducedArgs', reducedArgs)
+    count++
+    if (!repeat && count === n) {
+      prevEmitData(...reducedArgs)
+    } else if (count % n === 0) {
+      prevEmitData(...reducedArgs)
+      reducedArgs = undefined
+    }
+  }
+  this._subject.removeListener(this._eventName, prevEmitData)
+  this._subject.addListener(this._eventName, nextEmitData)
+  this._emitData = nextEmitData
+  return this
 }
 
 Preactor.prototype.accumulateInterval =
@@ -70,7 +96,7 @@ Preactor.prototype.debounce = function debounce (ms, argsReducer) {
     debug('nextEmitData', ...args)
     if (timeout) {
       debug('::timeout truthy::')
-      reducedArgs = argsReducer(reducedArgs, args) // assure Array
+      reducedArgs = argsReducer(reducedArgs, args)
       debug('reducedArgs', ...reducedArgs)
       clearTimeout(timeout)
       timeout = null
