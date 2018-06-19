@@ -12,12 +12,15 @@ tape('simple transducer - Reactor.prototype.delay', function (t) {
   var emitter = new EventEmitter()
   var reactor = new Reactor(emitter, 'fraud')
   var reacted = false
+
   reactor.delay(1000)
   reactor.once('fraud', function () {
     reacted = true
   })
+
   emitter.emit('fraud')
   t.false(reacted, 'not reacted yet')
+
   setTimeout(function () {
     t.false(reacted, 'still not reacted')
   }, 419)
@@ -35,10 +38,12 @@ tape('always passin error events', function (t) {
   var emitter = new EventEmitter()
   var reactor = new Reactor(emitter, 'fraud')
   reactor.delay(1000) // transducers cannot alter 'error' emit processes
+
   reactor.once('error', function onceError (err) {
     t.pass('got the error passed thru instantly')
     t.end()
   })
+
   emitter.emit('error')
 })
 
@@ -71,6 +76,7 @@ tape('transducer chainin', function (t) {
 
   emitter.emit('fraud')
   t.false(reacted, 'not reacted yet')
+
   setTimeout(function () {
     t.false(reacted, 'still not reacted')
   }, 50)
@@ -97,6 +103,7 @@ tape('throws on non-async subject', function (t) {
 tape('maskin with Reactor.prototype.mask', function (t) {
   var emitter = new EventEmitter()
   var called = 0
+
   new Reactor(emitter, 'masked')
     .mask([ 0, 1 ], false)
     .on('masked', function (num) {
@@ -104,6 +111,7 @@ tape('maskin with Reactor.prototype.mask', function (t) {
       t.is(num, 2, 'only got the second emit')
       t.end()
     })
+
   emitter.emit('masked', 1)
   emitter.emit('masked', 2)
 })
@@ -111,6 +119,7 @@ tape('maskin with Reactor.prototype.mask', function (t) {
 tape('maskin with recyclin via Reactor.prototype.mask', function (t) {
   var emitter = new EventEmitter()
   var called = 0
+
   new Reactor(emitter, 'masked')
     .mask([ false, true ], true)
     .on('masked', function (num) {
@@ -122,6 +131,7 @@ tape('maskin with recyclin via Reactor.prototype.mask', function (t) {
         t.end()
       }
     })
+
   emitter.emit('masked', 1)
   emitter.emit('masked', 2)
   emitter.emit('masked', 3)
@@ -142,11 +152,13 @@ tape('maxin with Reactor.prototype.max', function (t) {
   var emitter = new EventEmitter()
   var reactor = new Reactor(emitter, 'maxed')
   var count = 0, i = 0
+
   reactor
     .max(3)
     .on('maxed', function () {
       t.pass('got the listener called')
     })
+
   emitter.emit('maxed')
   emitter.emit('maxed')
   emitter.emit('maxed')
@@ -168,4 +180,59 @@ tape('errorin pt 2 with Reactor.prototype.max', function (t) {
       .max(NaN)
   }, TypeError, 'n is not an unsigned integer')
   t.end()
+})
+
+tape('debouncin with Reactor.prototype.debounce', function (t) {
+  var emitter = new EventEmitter()
+  var reactor = new Reactor(emitter, 'debounced')
+  var gotCalled = false
+
+  function argumentReducer (prevArgs = [ 0, '' ], nextArgs) {
+    return [ prevArgs[0] + nextArgs[0], prevArgs[1] + nextArgs[1] ]
+  }
+
+  reactor
+    .debounce(100, argumentReducer)
+    .on('debounced', function (reducedNumber, reducedString) {
+      gotCalled = true
+      t.is(reducedNumber, 686, 'reducedNumber is ' + reducedNumber)
+      t.is(reducedString, 'acab', 'reducedString is ' + reducedString)
+      t.end()
+    })
+
+  emitter.emit('debounced', 36, 'a')
+  emitter.emit('debounced', 44, 'c')
+  emitter.emit('debounced', 187, 'a')
+  emitter.emit('debounced', 419, 'b')
+
+  t.false(gotCalled, 'did not get called yet')
+  setTimeout(function () {
+      t.false(gotCalled, 'did not get called yet yet')
+  }, 50)
+  setTimeout(function () {
+      t.false(gotCalled, 'did not get called yet yet yet')
+  }, 75)
+})
+
+tape('within - Reactor.prototype.within', function (t) {
+  t.plan(9)
+  var emitter = new EventEmitter()
+  var reactor = new Reactor(emitter, 'within')
+  var start = Date.now()
+  var end = start + 1000 // +1s
+
+  reactor
+    .within(start, end)
+    .on('within', function (number) {
+      t.is(number, 1, 'number ' + number)
+      t.ok(Date.now() >= start, 'gte start')
+      t.ok(Date.now() <= end, 'lte end')
+    })
+
+  emitter.emit('within', 1)
+  emitter.emit('within', 1)
+  emitter.emit('within', 1)
+  setTimeout(function () {
+    emitter.emit('within')
+  }, 1050)
 })
