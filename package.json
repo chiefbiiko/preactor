@@ -1,26 +1,26 @@
 {
-  "name": "reactor",
+  "name": "preactor",
   "version": "0.3.3",
-  "description": "reactors",
+  "description": "preactors",
   "main": "index.js",
   "scripts": {
     "test": "tape test.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chiefbiiko/reactor.git"
+    "url": "git+https://github.com/chiefbiiko/preactor.git"
   },
   "keywords": [
-    "reactor",
-    "reactors",
+    "preactor",
+    "preactors",
     "events"
   ],
   "author": "Noah Anabiik Schwarz",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/chiefbiiko/reactor/issues"
+    "url": "https://github.com/chiefbiiko/preactor/issues"
   },
-  "homepage": "https://github.com/chiefbiiko/reactor#readme",
+  "homepage": "https://github.com/chiefbiiko/preactor#readme",
   "devDependencies": {
     "debug": "^3.1.0",
     "tape": "^4.9.1"

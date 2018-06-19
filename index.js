@@ -8,10 +8,10 @@ var {
   promiseToEmitter
 } = require('./utils.js')
 
-var debug = require('debug')('reactor')
+var debug = require('debug')('preactor')
 
-function Reactor (subject, eventName) {
-  if (!(this instanceof Reactor)) return new Reactor(subject, eventName)
+function Preactor (subject, eventName) {
+  if (!(this instanceof Preactor)) return new Preactor(subject, eventName)
   EventEmitter.call(this)
 
   if (subject instanceof Promise) {
@@ -42,9 +42,9 @@ function Reactor (subject, eventName) {
   this._subject.addListener(this._errorName, this._emitError)
 }
 
-inherits(Reactor, EventEmitter)
+inherits(Preactor, EventEmitter)
 
-Reactor.prototype.debounce = function debounce (ms, argsReducer) {
+Preactor.prototype.debounce = function debounce (ms, argsReducer) {
   if (!isUint(ms)) throw new TypeError('ms is not an unsigned integer')
   argsReducer = typeof argsReducer === 'function' ? argsReducer : latestWin
   debug('::debounce::')
@@ -70,7 +70,7 @@ Reactor.prototype.debounce = function debounce (ms, argsReducer) {
   return this
 }
 
-Reactor.prototype.delay = function delay (ms, unref) {
+Preactor.prototype.delay = function delay (ms, unref) {
   if (!isUint(ms)) throw new TypeError('ms is not an unsigned integer')
   unref = !!unref
   var prevEmitData = this._emitData
@@ -84,7 +84,7 @@ Reactor.prototype.delay = function delay (ms, unref) {
   return this
 }
 
-Reactor.prototype.limit = function limit (n) {
+Preactor.prototype.limit = function limit (n) {
   if (!isUint(n)) throw new TypeError('n is not an unsigned integer')
   var i = 0
   var prevEmitData = this._emitData
@@ -98,7 +98,7 @@ Reactor.prototype.limit = function limit (n) {
   return this
 }
 
-Reactor.prototype.mask = function mask (mask, recycle) {
+Preactor.prototype.mask = function mask (mask, recycle) {
   if (!Array.isArray(mask)) throw new TypeError('mask is not an array')
   recycle = recycle !== false
   var i = -1
@@ -115,7 +115,7 @@ Reactor.prototype.mask = function mask (mask, recycle) {
   return this
 }
 
-Reactor.prototype.notWithin = function notWithin (start, end) {
+Preactor.prototype.notWithin = function notWithin (start, end) {
   if (!isUint(start)) throw new TypeError('start is not an unsigned integer')
   else if (!isUint(end)) throw new TypeError('end is not an unsigned integer')
   var prevEmitData = this._emitData
@@ -129,7 +129,7 @@ Reactor.prototype.notWithin = function notWithin (start, end) {
   return this
 }
 
-Reactor.prototype.onlyWithin = function onlyWithin (start, end) {
+Preactor.prototype.onlyWithin = function onlyWithin (start, end) {
   if (!isUint(start)) throw new TypeError('start is not an unsigned integer')
   else if (!isUint(end)) throw new TypeError('end is not an unsigned integer')
   var prevEmitData = this._emitData
@@ -144,18 +144,18 @@ Reactor.prototype.onlyWithin = function onlyWithin (start, end) {
   return this
 }
 
-Reactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
+Preactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
 
 }
 
-Reactor.prototype.accumulateInterval =
+Preactor.prototype.accumulateInterval =
   function accumulateInterval (ms, argsReducer) {
 
 }
 
-Reactor.prototype.accumulatePeriod =
+Preactor.prototype.accumulatePeriod =
   function accumulatePeriod (start, end, argsReducer) {
 
 }
 
-module.exports = Reactor
+module.exports = Preactor
