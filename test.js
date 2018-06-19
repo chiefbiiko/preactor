@@ -248,25 +248,25 @@ tape('Reactor.prototype.debounce - argsReducer default demo', function (t) {
   emitter.emit('debounced', 187, 'c')
 })
 
-tape('within - Reactor.prototype.within', function (t) {
+tape('onlyWithin - Reactor.prototype.onlyWithin', function (t) {
   t.plan(9)
   var emitter = new EventEmitter()
-  var reactor = new Reactor(emitter, 'within')
+  var reactor = new Reactor(emitter, 'onlyWithin')
   var start = Date.now()
   var end = start + 1000 // +1s
 
   reactor
-    .within(start, end)
-    .on('within', function (number) {
+    .onlyWithin(start, end)
+    .on('onlyWithin', function (number) {
       t.is(number, 1, 'number ' + number)
       t.ok(Date.now() >= start, 'gte start')
       t.ok(Date.now() <= end, 'lte end')
     })
 
-  emitter.emit('within', 1)
-  emitter.emit('within', 1)
-  emitter.emit('within', 1)
+  emitter.emit('onlyWithin', 1)
+  emitter.emit('onlyWithin', 1)
+  emitter.emit('onlyWithin', 1)
   setTimeout(function () {
-    emitter.emit('within')
+    emitter.emit('onlyWithin')
   }, 1050)
 })

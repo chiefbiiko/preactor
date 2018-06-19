@@ -115,13 +115,9 @@ Reactor.prototype.mask = function mask (mask, recycle) {
   return this
 }
 
-Reactor.prototype.within = function within (start, end) {
-  if (!isUint(start)) {
-    throw new TypeError('start is not an unsigned integer')
-  } else if (!isUint(end)) {
-    end = start
-    start = Date.now()
-  }
+Reactor.prototype.onlyWithin = function onlyWithin (start, end) {
+  if (!isUint(start)) throw new TypeError('start is not an unsigned integer')
+  else if (!isUint(end)) throw new TypeError('end is not an unsigned integer')
   var prevEmitData = this._emitData
   function nextEmitData (...args) {
     var now = Date.now()
