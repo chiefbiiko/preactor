@@ -291,3 +291,51 @@ tape('notWithin - Preactor.prototype.notWithin', function (t) {
     emitter.emit('notWithin', 419)
   }, 1050)
 })
+
+tape('default distinct - Preactor.prototype.distinct', function (t) {
+  var emitter = new EventEmitter()
+  var preactor = new Preactor(emitter, 'distinct')
+  var count = 0
+
+  preactor
+    .distinct()
+    .on('distinct', function (number) {
+      count++
+      if (number === 3) {
+        t.is(count, 3, 'only listener calls with distinct args get thru')
+        t.end()
+      }
+    })
+
+  emitter.emit('distinct', 1)
+  emitter.emit('distinct', 1)
+  emitter.emit('distinct', 2)
+  emitter.emit('distinct', 3)
+})
+
+tape('distinct - Preactor.prototype.distinct', function (t) {
+  var emitter = new EventEmitter()
+  var preactor = new Preactor(emitter, 'distinct')
+  var count = 0
+
+  function lookbackTwo (accu = [], args) {
+    return !accu.slice(accu.length - 2).some(function (prevArgs) {
+      return prevArgs === args // TODO: deepEqual test
+    })
+  }
+
+  preactor
+    .distinct(lookbackTwo)
+    .on('distinct', function (number) {
+      count++
+      if (number === 3) {
+        t.is(count, 3, 'only listener calls with distinct args get thru')
+        t.end()
+      }
+    })
+
+  emitter.emit('distinct', 1)
+  emitter.emit('distinct', 1)
+  emitter.emit('distinct', 2)
+  emitter.emit('distinct', 3)
+})

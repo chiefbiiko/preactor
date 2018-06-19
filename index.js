@@ -3,6 +3,7 @@ var { inherits } = require('util')
 var {
   isUint,
   latestWin,
+  neverBefore,
   problyEventEmitter,
   problyEventTarget,
   promiseToEmitter
@@ -44,6 +45,20 @@ function Preactor (subject, eventName) {
 
 inherits(Preactor, EventEmitter)
 
+Preactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
+
+}
+
+Preactor.prototype.accumulateInterval =
+  function accumulateInterval (ms, argsReducer) {
+
+}
+
+Preactor.prototype.accumulatePeriod =
+  function accumulatePeriod (start, end, argsReducer) {
+
+}
+
 Preactor.prototype.debounce = function debounce (ms, argsReducer) {
   if (!isUint(ms)) throw new TypeError('ms is not an unsigned integer')
   argsReducer = typeof argsReducer === 'function' ? argsReducer : latestWin
@@ -77,6 +92,22 @@ Preactor.prototype.delay = function delay (ms, unref) {
   function nextEmitData (...args) {
     var timeout = setTimeout(prevEmitData, ms, ...args)
     if (unref && timeout.unref) timeout.unref()
+  }
+  this._subject.removeListener(this._eventName, prevEmitData)
+  this._subject.addListener(this._eventName, nextEmitData)
+  this._emitData = nextEmitData
+  return this
+}
+
+Preactor.prototype.distinct = function distinct (predicateFunc) {
+  if (typeof predicateFunc !== 'function') predicateFunc = neverBefore
+  var accu = []
+  var prevEmitData = this._emitData
+  function nextEmitData (...args) {
+    var pred = predicateFunc(accu, args)
+    debug('pred', pred)
+    if (pred) prevEmitData(...args)
+    accu.push(args)
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
@@ -142,20 +173,6 @@ Preactor.prototype.onlyWithin = function onlyWithin (start, end) {
   this._subject.addListener(this._eventName, nextEmitData)
   this._emitData = nextEmitData
   return this
-}
-
-Preactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
-
-}
-
-Preactor.prototype.accumulateInterval =
-  function accumulateInterval (ms, argsReducer) {
-
-}
-
-Preactor.prototype.accumulatePeriod =
-  function accumulatePeriod (start, end, argsReducer) {
-
 }
 
 module.exports = Preactor

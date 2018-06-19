@@ -8,6 +8,12 @@ function latestWin (prev, args) {
   return args
 }
 
+function neverBefore (accu, args) {
+  return !accu.some(function (prevArgs) {
+    return prevArgs === args // TODO: deepEqual test
+  })
+}
+
 function promiseToEmitter (promise, eventName, errorName) { // require once pub
   var emitter = new EventEmitter()
   promise
@@ -33,6 +39,7 @@ function problyEventTarget (x) {
 module.exports = {
   isUint,
   latestWin,
+  neverBefore,
   problyEventEmitter,
   problyEventTarget,
   promiseToEmitter
