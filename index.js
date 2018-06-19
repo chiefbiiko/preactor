@@ -61,7 +61,7 @@ Reactor.prototype.debounce = function debounce (ms, argsReducer) {
       timeout = null
     }
     debug('::timeout falsey::')
-    reducedArgs = (reducedArgs || args)
+    reducedArgs = reducedArgs || args
     timeout = setTimeout(prevEmitData, ms, ...reducedArgs)
   }
   this._subject.removeListener(this._eventName, prevEmitData)
@@ -109,6 +109,20 @@ Reactor.prototype.mask = function mask (mask, recycle) {
     if (cur) prevEmitData(...args)
     if (!cur && !recycle) null // unregisterin?
    }
+  this._subject.removeListener(this._eventName, prevEmitData)
+  this._subject.addListener(this._eventName, nextEmitData)
+  this._emitData = nextEmitData
+  return this
+}
+
+Reactor.prototype.notWithin = function notWithin (start, end) {
+  if (!isUint(start)) throw new TypeError('start is not an unsigned integer')
+  else if (!isUint(end)) throw new TypeError('end is not an unsigned integer')
+  var prevEmitData = this._emitData
+  function nextEmitData (...args) {
+    var now = Date.now()
+    if (now < start || now > end) prevEmitData(...args)
+  }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
   this._emitData = nextEmitData

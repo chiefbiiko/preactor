@@ -270,3 +270,24 @@ tape('onlyWithin - Reactor.prototype.onlyWithin', function (t) {
     emitter.emit('onlyWithin')
   }, 1050)
 })
+
+tape('notWithin - Reactor.prototype.notWithin', function (t) {
+  var emitter = new EventEmitter()
+  var reactor = new Reactor(emitter, 'notWithin')
+  var start = Date.now()
+  var end = start + 1000 // +1s
+
+  reactor
+    .notWithin(start, end)
+    .on('notWithin', function (number) {
+      t.is(number, 419, 'number ' + number)
+      t.end()
+    })
+
+  emitter.emit('notWithin', 1)
+  emitter.emit('notWithin', 2)
+  emitter.emit('notWithin', 3)
+  setTimeout(function () {
+    emitter.emit('notWithin', 419)
+  }, 1050)
+})
