@@ -3,7 +3,7 @@ var { inherits } = require('util')
 var {
   isUint,
   latestWin,
-  neverBefore,
+  naiveNeverBefore,
   problyEventEmitter,
   problyEventTarget,
   promiseToEmitter
@@ -100,7 +100,7 @@ Preactor.prototype.delay = function delay (ms, unref) {
 }
 
 Preactor.prototype.distinct = function distinct (predicateFunc) {
-  if (typeof predicateFunc !== 'function') predicateFunc = neverBefore
+  if (typeof predicateFunc !== 'function') predicateFunc = naiveNeverBefore
   var accu = []
   var prevEmitData = this._emitData
   function nextEmitData (...args) {

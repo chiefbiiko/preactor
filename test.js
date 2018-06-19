@@ -318,9 +318,11 @@ tape('distinct - Preactor.prototype.distinct', function (t) {
   var preactor = new Preactor(emitter, 'distinct')
   var count = 0
 
-  function lookbackTwo (accu = [], args) {
+  function lookbackTwo (accu, args) {
     return !accu.slice(accu.length - 2).some(function (prevArgs) {
-      return prevArgs === args // TODO: deepEqual test
+      return prevArgs.every(function (prevArg, i) {
+        return prevArg === args[i]
+      })
     })
   }
 

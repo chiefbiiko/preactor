@@ -8,9 +8,11 @@ function latestWin (prev, args) {
   return args
 }
 
-function neverBefore (accu, args) {
+function naiveNeverBefore (accu, args) {
   return !accu.some(function (prevArgs) {
-    return prevArgs === args // TODO: deepEqual test
+    return prevArgs.every(function (prevArg, i) {
+      return prevArg === args[i]
+    })
   })
 }
 
@@ -39,7 +41,7 @@ function problyEventTarget (x) {
 module.exports = {
   isUint,
   latestWin,
-  neverBefore,
+  naiveNeverBefore,
   problyEventEmitter,
   problyEventTarget,
   promiseToEmitter
