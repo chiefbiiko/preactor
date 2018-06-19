@@ -144,4 +144,18 @@ Reactor.prototype.onlyWithin = function onlyWithin (start, end) {
   return this
 }
 
+Reactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
+
+}
+
+Reactor.prototype.accumulateInterval =
+  function accumulateInterval (ms, argsReducer) {
+
+}
+
+Reactor.prototype.accumulatePeriod =
+  function accumulatePeriod (start, end, argsReducer) {
+
+}
+
 module.exports = Reactor
