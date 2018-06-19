@@ -403,3 +403,11 @@ tape('repeat accumulate - Preactor.prototype.accumulate', function (t) {
   emitter.emit('accumulate', 1)
   emitter.emit('accumulate', 1)
 })
+
+tape('accu errors', function (t) {
+  t.throws(function () {
+      new Preactor(new EventEmitter(), 'noop')
+        .accumulate(NaN)
+  }, TypeError, 'n is not an unsigned integer')
+  t.end()
+})
