@@ -63,6 +63,7 @@ Preactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
     debug('reducedArgs', reducedArgs)
     count++
     if (!repeat && count === n) {
+      // unregisterin?
       prevEmitData(...reducedArgs)
     } else if (count % n === 0) {
       prevEmitData(...reducedArgs)
@@ -85,8 +86,13 @@ Preactor.prototype.accumulatePeriod =
 
 }
 
-Preactor.prototype.debounce = function debounce (ms, argsReducer) {
+Preactor.prototype.debounce = function debounce (ms, unref, argsReducer) {
   if (!isUint(ms)) throw new TypeError('ms is not an unsigned integer')
+  if (typeof unref === 'function') {
+    argsReducer = unref
+    unref = false
+  }
+  unref = !!unref
   argsReducer = typeof argsReducer === 'function' ? argsReducer : latestWin
   debug('::debounce::')
   var prevEmitData = this._emitData
@@ -104,6 +110,7 @@ Preactor.prototype.debounce = function debounce (ms, argsReducer) {
     debug('::timeout falsey::')
     reducedArgs = reducedArgs || args
     timeout = setTimeout(prevEmitData, ms, ...reducedArgs)
+    if (unref && timeout.unref) timeout.unref()
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
