@@ -368,7 +368,7 @@ tape('custom argsReducer accumulate - Preactor.prototype.accumulate', function (
   }
 
   preactor
-    .accumulate(2, false, argsReducer)
+    .accumulate(2, argsReducer)
     .on('accumulate', function (reducedNumber) {
       t.is(reducedNumber, 2, 'reducedNumber is ' + reducedNumber)
       t.end()
@@ -410,4 +410,29 @@ tape('accu errors', function (t) {
         .accumulate(NaN)
   }, TypeError, 'n is not an unsigned integer')
   t.end()
+})
+
+tape.only('Preactor.prototype.accumulateInterval', function (t) {
+  var emitter = new EventEmitter()
+  var preactor = new Preactor(emitter, 'accuInterval')
+  var count = 0
+
+  function argsReducer (prev = [ 0 ], args) {
+    return prev[0] + args[0]
+  }
+
+  preactor
+    .accumulateInterval(50, true, argsReducer)
+    .on('accuInterval', function (number) {
+      count++
+      t.is(number, 2, 'number ' + number)
+      if(count === 2) t.end()
+    })
+
+  emitter.emit('accuInterval', 1)
+  emitter.emit('accuInterval', 1)
+  setTimeout(function () {
+    emitter.emit('accuInterval', 1)
+    emitter.emit('accuInterval', 1)
+  }, 70)
 })

@@ -77,13 +77,46 @@ Preactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
 }
 
 Preactor.prototype.accumulateInterval =
-  function accumulateInterval (ms, argsReducer) {
-
+  function accumulateInterval (ms, unref, argsReducer) {
+  if (!isUint(ms)) throw new TypeError('ms is not an unsigned integer')
+  if (typeof unref === 'function') {
+    argsReducer = unref
+    unref = false
+  } else if (typeof argsReducer !== 'function') {
+    argsReducer = latestWin
+  }
+  var self = this
+  var reducedArgs
+  var prevEmitData = this._emitData
+  function nextEmitData (...args) {
+    debug('nextEmitData args', ...args)
+    if (self._interval) {
+      reducedArgs = argsReducer(reducedArgs, args)
+      debug('reducedArgs', reducedArgs)
+    } else {
+      self._interval = setInterval(prevEmitData, ms, ...(reducedArgs || args))
+      if (unref && self._interval.unref) self._interval.unref()
+    }
+  }
+  this._subject.removeListener(this._eventName, prevEmitData)
+  this._subject.addListener(this._eventName, nextEmitData)
+  this._emitData = nextEmitData
+  return this
 }
 
 Preactor.prototype.accumulatePeriod =
   function accumulatePeriod (start, end, argsReducer) {
 
+}
+
+Preactor.prototype.clearOwnTimeout = function clearOwnTimeout () {
+  clearTimeout(this._timeout)
+  return this
+}
+
+Preactor.prototype.clearOwnInterval = function clearOwnInterval () {
+  clearInterval(this._interval)
+  return this
 }
 
 Preactor.prototype.debounce = function debounce (ms, unref, argsReducer) {
@@ -97,20 +130,21 @@ Preactor.prototype.debounce = function debounce (ms, unref, argsReducer) {
   debug('::debounce::')
   var prevEmitData = this._emitData
   var reducedArgs
-  var timeout
+  // var timeout
+  var self = this
   function nextEmitData (...args) {
     debug('nextEmitData', ...args)
-    if (timeout) {
+    if (self._timeout) {
       debug('::timeout truthy::')
       reducedArgs = argsReducer(reducedArgs, args)
       debug('reducedArgs', ...reducedArgs)
-      clearTimeout(timeout)
-      timeout = null
+      clearTimeout(self._timeout)
+      self._timeout = null
     }
     debug('::timeout falsey::')
     reducedArgs = reducedArgs || args
-    timeout = setTimeout(prevEmitData, ms, ...reducedArgs)
-    if (unref && timeout.unref) timeout.unref()
+    self._timeout = setTimeout(prevEmitData, ms, ...reducedArgs)
+    if (unref && self._timeout.unref) self._timeout.unref()
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
