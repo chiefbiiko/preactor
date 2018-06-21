@@ -85,8 +85,9 @@ Preactor.prototype.accumulateInterval =
   } else if (typeof argsReducer !== 'function') {
     argsReducer = latestWin
   }
-  var self = this
+  unref = !!unref
   var reducedArgs
+  var self = this
   var prevEmitData = this._emitData
   function nextEmitData (...args) {
     debug('nextEmitData args', ...args)
@@ -94,7 +95,10 @@ Preactor.prototype.accumulateInterval =
       reducedArgs = argsReducer(reducedArgs, args)
       debug('reducedArgs', reducedArgs)
     } else {
-      self._interval = setInterval(prevEmitData, ms, ...(reducedArgs || args))
+      reducedArgs = argsReducer(reducedArgs, args)
+      self._interval = setInterval(function () {
+        prevEmitData(...reducedArgs)
+      }, ms)
       if (unref && self._interval.unref) self._interval.unref()
     }
   }
@@ -128,10 +132,9 @@ Preactor.prototype.debounce = function debounce (ms, unref, argsReducer) {
   unref = !!unref
   argsReducer = typeof argsReducer === 'function' ? argsReducer : latestWin
   debug('::debounce::')
-  var prevEmitData = this._emitData
   var reducedArgs
-  // var timeout
   var self = this
+  var prevEmitData = this._emitData
   function nextEmitData (...args) {
     debug('nextEmitData', ...args)
     if (self._timeout) {

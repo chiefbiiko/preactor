@@ -418,13 +418,14 @@ tape.only('Preactor.prototype.accumulateInterval', function (t) {
   var count = 0
 
   function argsReducer (prev = [ 0 ], args) {
-    return prev[0] + args[0]
+    return [ prev[0] + args[0] ]
   }
 
   preactor
     .accumulateInterval(50, true, argsReducer)
     .on('accuInterval', function (number) {
       count++
+      console.log('count', count)
       t.is(number, 2, 'number ' + number)
       if(count === 2) t.end()
     })
