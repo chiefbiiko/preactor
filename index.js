@@ -81,7 +81,7 @@ Preactor.prototype.accumulateInterval =
   if (!isUint(ms)) throw new TypeError('ms is not an unsigned integer')
   if (typeof unref === 'function') {
     argsReducer = unref
-    unref = false
+    unref = true
   } else if (typeof argsReducer !== 'function') {
     argsReducer = latestWin
   }
@@ -90,14 +90,16 @@ Preactor.prototype.accumulateInterval =
   var self = this
   var prevEmitData = this._emitData
   function nextEmitData (...args) {
-    debug('nextEmitData args', ...args)
     if (self._interval) {
       reducedArgs = argsReducer(reducedArgs, args)
-      debug('reducedArgs', reducedArgs)
+      debug('interval truthy reducedArgs', reducedArgs)
     } else {
       reducedArgs = argsReducer(reducedArgs, args)
+      debug('interval falsey reducedArgs', reducedArgs)
       self._interval = setInterval(function () {
-        prevEmitData(...reducedArgs)
+        debug('timeout reducedArgs', reducedArgs)
+        prevEmitData(...(reducedArgs || []))
+        reducedArgs = undefined
       }, ms)
       if (unref && self._interval.unref) self._interval.unref()
     }

@@ -412,7 +412,31 @@ tape('accu errors', function (t) {
   t.end()
 })
 
-tape.only('Preactor.prototype.accumulateInterval', function (t) {
+tape('Preactor.prototype.accumulateInterval - defaults', function (t) {
+  var emitter = new EventEmitter()
+  var preactor = new Preactor(emitter, 'accuInterval')
+  var count = 0
+
+  preactor
+    .accumulateInterval(50)
+    .on('accuInterval', function (latest) {
+      count++
+      t.is(latest, 419, 'number ' + latest)
+      if (count === 2) {
+        preactor.clearOwnInterval()
+        t.end()
+      }
+    })
+
+  emitter.emit('accuInterval', 1)
+  emitter.emit('accuInterval', 419)
+  setTimeout(function () {
+    emitter.emit('accuInterval', 1)
+    emitter.emit('accuInterval', 419)
+  }, 70)
+})
+
+tape('Preactor.prototype.accumulateInterval', function (t) {
   var emitter = new EventEmitter()
   var preactor = new Preactor(emitter, 'accuInterval')
   var count = 0
@@ -424,10 +448,8 @@ tape.only('Preactor.prototype.accumulateInterval', function (t) {
   preactor
     .accumulateInterval(50, true, argsReducer)
     .on('accuInterval', function (number) {
-      count++
-      console.log('count', count)
       t.is(number, 2, 'number ' + number)
-      if(count === 2) t.end()
+      if (++count === 2) t.end()
     })
 
   emitter.emit('accuInterval', 1)
