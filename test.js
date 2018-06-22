@@ -446,10 +446,13 @@ tape('Preactor.prototype.accumulateInterval', function (t) {
   }
 
   preactor
-    .accumulateInterval(50, true, argsReducer)
+    .accumulateInterval(50, false, argsReducer)
     .on('accuInterval', function (number) {
       t.is(number, 2, 'number ' + number)
-      if (++count === 2) t.end()
+      if (++count === 2) {
+        preactor.clearOwnInterval()
+        t.end()
+      }
     })
 
   emitter.emit('accuInterval', 1)

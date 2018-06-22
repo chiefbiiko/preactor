@@ -11,8 +11,10 @@ var {
 
 var debug = require('debug')('preactor')
 
-function Preactor (subject, eventName) {
-  if (!(this instanceof Preactor)) return new Preactor(subject, eventName)
+function Preactor (subject, eventName, errorName) {
+  if (!(this instanceof Preactor)) {
+    return new Preactor(subject, eventName, errorName)
+  }
   EventEmitter.call(this)
 
   if (subject instanceof Promise) {
@@ -23,7 +25,7 @@ function Preactor (subject, eventName) {
     throw new TypeError('event name string required')
   }
 
-  this._errorName = 'error'
+  this._errorName = errorName || 'error'
   this._emitData = this.emit.bind(this, this._eventName)
   this._emitError = this.emit.bind(this, this._errorName)
 
@@ -81,7 +83,7 @@ Preactor.prototype.accumulateInterval =
   if (!isUint(ms)) throw new TypeError('ms is not an unsigned integer')
   if (typeof unref === 'function') {
     argsReducer = unref
-    unref = true
+    unref = false
   } else if (typeof argsReducer !== 'function') {
     argsReducer = latestWin
   }
