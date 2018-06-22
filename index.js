@@ -112,7 +112,7 @@ Preactor.prototype.accumulateInterval =
 
 Preactor.prototype.accumulatePeriod =
   function accumulatePeriod (start, end, argsReducer) {
-
+  throw new Error('not yet implemented')
 }
 
 Preactor.prototype.clearOwnTimeout = function clearOwnTimeout () {

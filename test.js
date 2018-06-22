@@ -459,3 +459,11 @@ tape('Preactor.prototype.accumulateInterval', function (t) {
     emitter.emit('accuInterval', 1)
   }, 70)
 })
+
+tape('WIP Preactor.prototype.accumulatePeriod', function (t) {
+  var preactor = new Preactor(new EventEmitter(), 'noop')
+  t.throws(function () {
+    preactor.accumulatePeriod(123456789, 123459999)
+  }, Error, 'not yet implemented')
+  t.end()
+})
