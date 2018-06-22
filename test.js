@@ -1,6 +1,6 @@
 var tape = require('tape')
 var EventEmitter = require('events').EventEmitter
-var Preactor = require('./index')
+var Preactor = require('./index.js')
 
 function makePromise (value) {
   return new Promise(function (resolve, reject) {

@@ -148,7 +148,7 @@ Preactor.prototype.debounce = function debounce (ms, unref, argsReducer) {
       clearTimeout(self._timeout)
       self._timeout = null
     }
-    debug('::timeout falsey::')
+    debug('::fresh timeout::')
     reducedArgs = reducedArgs || args
     self._timeout = setTimeout(prevEmitData, ms, ...reducedArgs)
     if (unref && self._timeout.unref) self._timeout.unref()

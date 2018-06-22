@@ -4,7 +4,10 @@
   "description": "preactors",
   "main": "index.js",
   "scripts": {
-    "test": "tape test.js"
+    "test": "npm run node-test && npm run browser-test",
+    "node-test": "tape test.js",
+    "browser-test": "browserify test.browser.js | tape-run",
+    "demo": "wzrd usage.js"
   },
   "repository": {
     "type": "git",
@@ -13,7 +16,11 @@
   "keywords": [
     "preactor",
     "preactors",
-    "events"
+    "events",
+    "event handling",
+    "reactive programming",
+    "event-driven programming",
+    "EventEmitter"
   ],
   "author": "Noah Anabiik Schwarz",
   "license": "MIT",
@@ -22,7 +29,10 @@
   },
   "homepage": "https://github.com/chiefbiiko/preactor#readme",
   "devDependencies": {
+    "browserify": "^16.2.2",
     "debug": "^3.1.0",
-    "tape": "^4.9.1"
+    "tape": "^4.9.1",
+    "tape-run": "^4.0.0",
+    "wzrd": "^1.5.0"
   }
 }
