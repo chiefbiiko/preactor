@@ -1,4 +1,4 @@
-// run @maxogden/wzrd usage.js and hit localhost:9966 with a browser
+// npm run demo and hit localhost:9966 with a browser
 
 var preactor = require('./index.js')
 
