@@ -41,18 +41,19 @@ tape('errorin with Preactor.prototype.delay', function (t) {
   t.end()
 })
 
-tape('always passin error events', function (t) {
+tape('gettin error events', function (t) {
   t.timeoutAfter(100)
   var emitter = new EventEmitter()
-  var preactor = new Preactor(emitter, 'fraud')
-  preactor.delay(1000) // transducers cannot alter 'error' emit processes
+  var preactor = new Preactor(emitter, 'fraud', 'error')
+  preactor.delay(1000) // transducers cannot alter error emit processes
 
   preactor.once('error', function onceError (err) {
+    t.same(err.constructor, Error, 'err')
     t.pass('got the error passed thru instantly')
     t.end()
   })
 
-  emitter.emit('error')
+  emitter.emit('error', new Error('errmsg'))
 })
 
 tape('takin a promise', function (t) {
@@ -101,7 +102,7 @@ tape('throws on missing event name with event emitters', function (t) {
   t.end()
 })
 
-tape('throws on non-async subject', function (t) {
+tape('throws on anti-emitter', function (t) {
   t.throws(function () {
     new Preactor(419, 'fraud')
   }, TypeError, 'unsupported subject type')

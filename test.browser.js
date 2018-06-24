@@ -6,7 +6,7 @@ tape('in-browser debounce', function (t) {
 
   preactor(input, 'change')
     .debounce(1000)
-    .on('change', function ondebouncedchange (untrustedE) {
+    .once('change', function (untrustedE) {
       t.is(input.value, 'y y y y y ', 'y')
       t.end()
     })
@@ -29,13 +29,14 @@ tape('accumulatin websocket messages', function (t) {
   }
 
   preactor(websocket, 'message')
-    .accumulate(3, false, argsReducer)
-    .once('message', function oncemessage (accumulatedMsg) {
+    .accumulate(3, argsReducer)
+    .once('message', function (accumulatedMsg) {
       t.is(accumulatedMsg, '419', 'got message')
+      websocket.close()
       t.end()
     })
 
-  websocket.onopen = function onopen () {
+  websocket.onopen = function () {
     websocket.send('4')
     websocket.send('1')
     websocket.send('9')

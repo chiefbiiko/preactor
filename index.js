@@ -15,6 +15,7 @@ function Preactor (subject, eventName, errorName) {
   if (!(this instanceof Preactor)) {
     return new Preactor(subject, eventName, errorName)
   }
+
   EventEmitter.call(this)
 
   if (subject instanceof Promise) {
@@ -25,10 +26,6 @@ function Preactor (subject, eventName, errorName) {
     throw new TypeError('event name string required')
   }
 
-  this._errorName = errorName || 'error'
-  this._emitData = this.emit.bind(this, this._eventName)
-  this._emitError = this.emit.bind(this, this._errorName)
-
   if (problyEventEmitter(subject)) {
     this._subject = subject
   } else if (problyEventTarget(subject)) {
@@ -36,13 +33,17 @@ function Preactor (subject, eventName, errorName) {
     subject.removeListener = subject.removeEventListener
     this._subject = subject
   } else if (subject instanceof Promise) {
-    this._subject = promiseToEmitter(subject, this._eventName, this._errorName)
+    this._subject = promiseToEmitter(subject, this._eventName, errorName)
   } else {
     throw new TypeError('unsupported subject type')
   }
 
+  if (typeof errorName === 'string') {
+    this._subject.addListener(errorName, this.emit.bind(this, errorName))
+  }
+
+  this._emitData = this.emit.bind(this, this._eventName)
   this._subject.addListener(this._eventName, this._emitData)
-  this._subject.addListener(this._errorName, this._emitError)
 }
 
 inherits(Preactor, EventEmitter)
@@ -65,7 +66,7 @@ Preactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
     debug('reducedArgs', reducedArgs)
     count++
     if (!repeat && count === n) {
-      // unregisterin?
+      null // unregisterin?
       prevEmitData(...reducedArgs)
     } else if (count % n === 0) {
       prevEmitData(...reducedArgs)
@@ -162,10 +163,11 @@ Preactor.prototype.debounce = function debounce (ms, unref, argsReducer) {
 Preactor.prototype.delay = function delay (ms, unref) {
   if (!isUint(ms)) throw new TypeError('ms is not an unsigned integer')
   unref = !!unref
+  var self = this
   var prevEmitData = this._emitData
   function nextEmitData (...args) {
-    var timeout = setTimeout(prevEmitData, ms, ...args)
-    if (unref && timeout.unref) timeout.unref()
+    self._timeout = setTimeout(prevEmitData, ms, ...args)
+    if (unref && self._timeout.unref) self._timeout.unref()
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
