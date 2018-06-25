@@ -437,7 +437,7 @@ tape('Preactor.prototype.accumulateInterval - defaults', function (t) {
   }, 70)
 })
 
-tape('Preactor.prototype.accumulateInterval', function (t) {
+tape('Preactor.prototype.accumulateInterval - with clearin', function (t) {
   var emitter = new EventEmitter()
   var preactor = new Preactor(emitter, 'accuInterval')
   var count = 0
@@ -470,4 +470,84 @@ tape('WIP Preactor.prototype.accumulatePeriod', function (t) {
     preactor.accumulatePeriod(123456789, 123459999)
   }, Error, 'not yet implemented')
   t.end()
+})
+
+tape('Preactor.prototype.reset', function (t) {
+  var emitter = new EventEmitter()
+  var preactor = new Preactor(emitter, 'fraud')
+  var count1 = 0
+  var count2 = 0
+
+  preactor
+    .distinct()
+    .on('fraud', function (number) {
+      count1++
+      if (count1 === 1) {
+        t.is(number, 1, 'got one')
+      } else if (count1 === 2) {
+        t.is(number, 2, 'got two')
+        preactor.reset(0) // resettin the preactor to the initial transducer
+      } else { // goin here
+        count2++
+        t.is(number, 419, 'forever ' + number)
+        if (count2 === 3) t.end()
+      }
+    })
+
+  emitter.emit('fraud', 1)
+  emitter.emit('fraud', 2)
+  emitter.emit('fraud', 419)
+  emitter.emit('fraud', 419)
+  emitter.emit('fraud', 419)
+})
+
+tape('Preactor.prototype.reset - error pt1', function (t) {
+  t.throws(function () {
+    new Preactor(new EventEmitter(), 'fraud')
+      .delay(1000)
+      .reset(2)
+  }, TypeError, 'invalid index')
+  t.end()
+})
+
+tape('Preactor.prototype.reset - error pt1', function (t) {
+  t.throws(function () {
+    new Preactor(new EventEmitter(), 'fraud')
+      .delay(1000)
+      .reset(-1)
+  }, TypeError, 'index is not an unsigned integer')
+  t.end()
+})
+
+tape('getter for hidden property "transducers"', function (t) {
+  var preactor = new Preactor(new EventEmitter(), 'fraud').delay(1000)
+  var transducers = preactor.transducers
+  t.true(Array.isArray(transducers), 'got an array')
+  t.is(transducers.length, 2, 'got two')
+  for (var func of transducers) t.true(typeof func === 'function', 'got a function')
+  t.end()
+})
+
+tape('Preactor.prototype.clearOwnTimeout', function (t) {
+  t.plan(1)
+  t.timeoutAfter(1090)
+
+  var emitter = new EventEmitter()
+  var preactor = new Preactor(emitter, 'fraud')
+  var count = 0
+
+  preactor
+    .delay(1000)
+    .on('fraud', function (msg) {
+      count++
+      preactor.clearOwnTimeout() // clearin second
+      t.is(msg, 'first', 'first delayed event')
+      if (count > 1) t.fail('should be unreachable')
+    })
+
+  emitter.emit('fraud', 'first')
+
+  setTimeout(function () {
+    emitter.emit('fraud', 'second') // about to get cleared
+  }, 100)
 })

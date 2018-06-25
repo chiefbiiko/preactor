@@ -18,6 +18,8 @@ function Preactor (subject, eventName, errorName) {
 
   EventEmitter.call(this)
 
+  this._transducers = []
+
   if (subject instanceof Promise) {
     this._eventName = typeof eventName === 'string' ? eventName : 'resolved'
   } else if (typeof eventName === 'string') {
@@ -44,6 +46,7 @@ function Preactor (subject, eventName, errorName) {
 
   this._emitData = this.emit.bind(this, this._eventName)
   this._subject.addListener(this._eventName, this._emitData)
+  this._transducers.push(this._emitData)
 }
 
 inherits(Preactor, EventEmitter)
@@ -59,7 +62,7 @@ Preactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
   repeat = !!repeat
   var count = 0
   var reducedArgs
-  var prevEmitData = this._emitData
+  var prevEmitData = this._transducers[this._transducers.length - 1]
   function nextEmitData (...args) {
     debug('args', args)
     reducedArgs = argsReducer(reducedArgs, args)
@@ -75,7 +78,7 @@ Preactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
-  this._emitData = nextEmitData
+  this._transducers.push(nextEmitData)
   return this
 }
 
@@ -91,7 +94,7 @@ Preactor.prototype.accumulateInterval =
   unref = !!unref
   var reducedArgs
   var self = this
-  var prevEmitData = this._emitData
+  var prevEmitData = this._transducers[this._transducers.length - 1]
   function nextEmitData (...args) {
     if (self._interval) {
       reducedArgs = argsReducer(reducedArgs, args)
@@ -109,23 +112,13 @@ Preactor.prototype.accumulateInterval =
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
-  this._emitData = nextEmitData
+  this._transducers.push(nextEmitData)
   return this
 }
 
 Preactor.prototype.accumulatePeriod =
   function accumulatePeriod (start, end, argsReducer) {
   throw new Error('not yet implemented')
-}
-
-Preactor.prototype.clearOwnTimeout = function clearOwnTimeout () {
-  clearTimeout(this._timeout)
-  return this
-}
-
-Preactor.prototype.clearOwnInterval = function clearOwnInterval () {
-  clearInterval(this._interval)
-  return this
 }
 
 Preactor.prototype.debounce = function debounce (ms, unref, argsReducer) {
@@ -139,7 +132,7 @@ Preactor.prototype.debounce = function debounce (ms, unref, argsReducer) {
   debug('::debounce::')
   var reducedArgs
   var self = this
-  var prevEmitData = this._emitData
+  var prevEmitData = this._transducers[this._transducers.length - 1]
   function nextEmitData (...args) {
     debug('nextEmitData', ...args)
     if (self._timeout) {
@@ -156,7 +149,7 @@ Preactor.prototype.debounce = function debounce (ms, unref, argsReducer) {
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
-  this._emitData = nextEmitData
+  this._transducers.push(nextEmitData)
   return this
 }
 
@@ -164,21 +157,21 @@ Preactor.prototype.delay = function delay (ms, unref) {
   if (!isUint(ms)) throw new TypeError('ms is not an unsigned integer')
   unref = !!unref
   var self = this
-  var prevEmitData = this._emitData
+  var prevEmitData = this._transducers[this._transducers.length - 1]
   function nextEmitData (...args) {
     self._timeout = setTimeout(prevEmitData, ms, ...args)
     if (unref && self._timeout.unref) self._timeout.unref()
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
-  this._emitData = nextEmitData
+  this._transducers.push(nextEmitData)
   return this
 }
 
 Preactor.prototype.distinct = function distinct (predicateFunc) {
   if (typeof predicateFunc !== 'function') predicateFunc = naiveNeverBefore
   var accu = []
-  var prevEmitData = this._emitData
+  var prevEmitData = this._transducers[this._transducers.length - 1]
   function nextEmitData (...args) {
     var pred = predicateFunc(accu, args)
     debug('pred', pred)
@@ -187,21 +180,21 @@ Preactor.prototype.distinct = function distinct (predicateFunc) {
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
-  this._emitData = nextEmitData
+  this._transducers.push(nextEmitData)
   return this
 }
 
 Preactor.prototype.limit = function limit (n) {
   if (!isUint(n)) throw new TypeError('n is not an unsigned integer')
   var i = 0
-  var prevEmitData = this._emitData
+  var prevEmitData = this._transducers[this._transducers.length - 1]
   function nextEmitData (...args) {
     if (i++ < n) prevEmitData(...args)
     else null // unregisterin?
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
-  this._emitData = nextEmitData
+  this._transducers.push(nextEmitData)
   return this
 }
 
@@ -209,7 +202,7 @@ Preactor.prototype.mask = function mask (mask, recycle) {
   if (!Array.isArray(mask)) throw new TypeError('mask is not an array')
   recycle = recycle !== false
   var i = -1
-  var prevEmitData = this._emitData
+  var prevEmitData = this._transducers[this._transducers.length - 1]
   function nextEmitData (...args) {
     if (++i === mask.length && recycle) i = 0
     var cur = mask[i]
@@ -218,28 +211,28 @@ Preactor.prototype.mask = function mask (mask, recycle) {
    }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
-  this._emitData = nextEmitData
+  this._transducers.push(nextEmitData)
   return this
 }
 
 Preactor.prototype.notWithin = function notWithin (start, end) {
   if (!isUint(start)) throw new TypeError('start is not an unsigned integer')
   else if (!isUint(end)) throw new TypeError('end is not an unsigned integer')
-  var prevEmitData = this._emitData
+  var prevEmitData = this._transducers[this._transducers.length - 1]
   function nextEmitData (...args) {
     var now = Date.now()
     if (now < start || now > end) prevEmitData(...args)
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
-  this._emitData = nextEmitData
+  this._transducers.push(nextEmitData)
   return this
 }
 
 Preactor.prototype.onlyWithin = function onlyWithin (start, end) {
   if (!isUint(start)) throw new TypeError('start is not an unsigned integer')
   else if (!isUint(end)) throw new TypeError('end is not an unsigned integer')
-  var prevEmitData = this._emitData
+  var prevEmitData = this._transducers[this._transducers.length - 1]
   function nextEmitData (...args) {
     var now = Date.now()
     if (now >= start && now <= end) prevEmitData(...args)
@@ -247,8 +240,32 @@ Preactor.prototype.onlyWithin = function onlyWithin (start, end) {
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
-  this._emitData = nextEmitData
+  this._transducers.push(nextEmitData)
   return this
 }
+
+Preactor.prototype.clearOwnTimeout = function clearOwnTimeout () {
+  clearTimeout(this._timeout)
+  return this
+}
+
+Preactor.prototype.clearOwnInterval = function clearOwnInterval () {
+  clearInterval(this._interval)
+  return this
+}
+
+Preactor.prototype.reset = function reset (index) {
+  if(!isUint(index)) throw new TypeError('index is not an unsigned integer')
+  if (index >= this._transducers.length) throw new TypeError('invalid index')
+  var prevEmitData = this._transducers[this._transducers.length - 1]
+  this._subject.removeListener(this._eventName, prevEmitData)
+  this._subject.addListener(this._eventName, this._transducers[index])
+}
+
+Preactor.prototype.__defineGetter__('transducers', function () {
+  return this._transducers // [ ...this._transducers ] to copy?
+})
+
+
 
 module.exports = Preactor
