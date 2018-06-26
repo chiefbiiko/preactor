@@ -123,13 +123,13 @@ Preactor.prototype.accumulatePeriod =
 
 Preactor.prototype.debounce = function debounce (ms, unref, argsReducer) {
   if (!isUint(ms)) throw new TypeError('ms is not an unsigned integer')
+  debug('::debounce::')
   if (typeof unref === 'function') {
     argsReducer = unref
     unref = false
   }
   unref = !!unref
   argsReducer = typeof argsReducer === 'function' ? argsReducer : latestWin
-  debug('::debounce::')
   var reducedArgs
   var self = this
   var prevEmitData = this._transducers[this._transducers.length - 1]

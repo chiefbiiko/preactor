@@ -1,13 +1,15 @@
 {
   "name": "preactor",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "preactors",
-  "main": "index.js",
+  "unpkg": "./browser.js",
+  "main": "./index.js",
   "scripts": {
+    "bundle": "browserify ./index.js -s preactor -o ./browser.js",
     "test": "npm run node-test && npm run browser-test",
-    "node-test": "tape test.js",
-    "browser-test": "browserify test.browser.js | tape-run",
-    "demo": "wzrd usage.js"
+    "node-test": "tape ./test.js",
+    "browser-test": "browserify ./test.browser.js | tape-run",
+    "demo": "wzrd ./usage.js"
   },
   "repository": {
     "type": "git",
