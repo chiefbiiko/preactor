@@ -102,7 +102,7 @@ tape('throws on missing event name with event emitters', function (t) {
   t.end()
 })
 
-tape('throws on anti-emitter', function (t) {
+tape('throws on anything !promise && !emitter', function (t) {
   t.throws(function () {
     new Preactor(419, 'fraud')
   }, TypeError, 'unsupported subject type')
