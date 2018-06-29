@@ -119,6 +119,10 @@ Preactor.prototype.accumulateInterval =
 Preactor.prototype.accumulatePeriod =
   function accumulatePeriod (start, end, argsReducer) {
   throw new Error('not yet implemented')
+  if (!isUint(start)) throw new TypeError('start is not an unsigned integer')
+  if (!isUint(end)) throw new TypeError('end is not an unsigned integer')
+  if (typeof argsReducer !== 'function') argsReducer = latestWin
+  // ...
 }
 
 Preactor.prototype.debounce = function debounce (ms, unref, argsReducer) {
