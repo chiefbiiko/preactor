@@ -1,6 +1,8 @@
 var tape = require('tape')
 var preactor = require('./index.js')
 
+// fix browser-test on new local machine and start CI
+
 tape('in-browser debounce', function (t) {
   var input = document.createElement('input')
 
