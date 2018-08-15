@@ -4,7 +4,7 @@
 
 ***
 
-preactor
+`preactor` allows to develop event-heavy and reactive applications in a seemless manner. Its manifestation, the `Preactor` type, an `EventEmitter`, has a variety of methods for manipulating the process of an event being emitted. All `Preactor.prototype` methods may be called *transducers*.
 
 ***
 
@@ -18,17 +18,50 @@ npm install --save preactor
 
 ## Usage
 
+Wrap any `EventEmitter`, `EventTarget`, or `Promise` instance with the `Preactor` type, then manipulate events/emits via transducers.
+
+The example below is for a browser a context. Run `npm run demo` and hit `localhost:9966` with a browser.
+
 ``` js
-/* preactor */
+var preactor = require('preactor')
+
+window.onload = function () {
+  var input = document.createElement('input')
+  input.placeholder = 'type 2 c keyup debounce'
+
+  preactor(input, 'keyup')
+    .debounce(1000)
+    .on('keyup', function (e) {
+      alert('debounced:: ' + e.target.value)
+    })
+
+  document.body.appendChild(input)
+}
 ```
 
 ***
 
 ## API
 
-### `preactor`
+### `new Preactor(emitter, eventName[, errorName])`
 
-preactor
+Create a `preactor` that wraps an `EventEmitter`, `EventTarget` or `Promise`.
+
+For those that don't like `new`:
+
+`preactor(emitter, eventName[, errorName])`
+
+The returned `Preactor` instance itself is just a simple `EventEmitter`. Passing `eventName` is required for all input emitters that are not a `Promise`. For a `Promise` `eventName` defaults to `'resolved'`, whereas `errorName` defaults to `'rejected'`. When wrapping an `EventEmitter` or `EventTarget` `eventName` is required and indicates the event to preact upon, whereas `errorName` is optional and indicates the name of the event that signals failure. Specifying `errorName` allows to listen for errors directly on the preactor instance as it simply forwards failures of its wrapped subject.
+
+### `Preactor.prototype.accumulate(n[, repeat][, argsReducer]): this`
+
+Accumulate `n` emits of the preactor's event using `argsReducer` to handle the propagation of arguments. `n` must be an unsigned integer, `repeat` a boolean, and `argsReducer` a function. The latter must have arity two, take two arrays as inputs, whereby the first parameter should have a default argument, i.e. `argsReducer(a = [], b)`, and return an array. `argsReducer` defaults to a *latestWin* implementation. `repeat` indicates whether to repeat accumulation or accumulate the first `n` emits only.
+
+### `Preactor.prototype.accumulateInterval(ms[, unref][, argsReducer]): this`
+
+Accumulate emits of the preactor's event within a recurring interval. `ms` must be an unsigned integer and indicates the interval duration. `unref` must be a boolean and indicates whether to call `Timeout.prototype.unref` in a node context. `argsReducer` must be a function and defaults to a *latestWin* implementation. It must have arity two, take two arrays as inputs, whereby the first parameter should have a default argument, i.e. `argsReducer(a = [], b)`, and return an array.
+
+### **_tbc_**
 
 ***
 
