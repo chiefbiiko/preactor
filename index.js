@@ -182,14 +182,14 @@ Preactor.prototype.delay = function delay (ms, unref) {
   return this
 }
 
-Preactor.prototype.distinct = function distinct (predicateFunc) {
-  if (typeof predicateFunc !== 'function') predicateFunc = naiveNeverBefore
+Preactor.prototype.distinct = function distinct (pred) {
+  if (typeof pred !== 'function') pred = naiveNeverBefore
   var accu = []
   var prevEmitData = this._transducers[this._transducers.length - 1]
   function nextEmitData (...args) {
-    var pred = predicateFunc(accu, args)
-    debug('pred', pred)
-    if (pred) prevEmitData(...args)
+    var distinct = pred(accu, args)
+    debug('distinct', distinct)
+    if (distinct) prevEmitData(...args)
     accu.push(args)
   }
   this._subject.removeListener(this._eventName, prevEmitData)
