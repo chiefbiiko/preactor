@@ -59,7 +59,11 @@ Accumulate `n` emits of the preactor's event using `argsReducer` to handle the p
 
 ### `Preactor.prototype.accumulateInterval(ms[, unref][, argsReducer]): this`
 
-Accumulate emits of the preactor's event within a recurring interval. `ms` must be an unsigned integer and indicates the interval duration. `unref` must be a boolean and indicates whether to call `Timeout.prototype.unref` in a node context. `argsReducer` must be a function and defaults to a *latestWin* implementation. It must have arity two, take two arrays as inputs, whereby the first parameter should have a default argument, i.e. `argsReducer(a = [], b)`, and return an array.
+Accumulate emits of the preactor's event within a recurring interval. `ms` must be an unsigned integer and indicates the interval duration. `unref` must be a boolean and indicates whether to call `Timeout.prototype.unref` in a node context. `argsReducer` should be a function and defaults to a *latestWin* implementation. It must have arity two, take two arrays as inputs, whereby the first parameter should have a default argument, i.e. `argsReducer(a = [], b)`, and return an array.
+
+### `Preactor.prototype.debounce(ms[, unref][, argsReducer])`
+
+Debounces the preactor's event by `ms`. Unreference internal timers by passing a truthy non-function second argument. If passed `argsReducer` must be a function and defaults to a *latestWin* implementation. It must have arity two, take two arrays as inputs, whereby the first parameter should have a default argument, i.e. `argsReducer(a = [], b)`, and return an array.
 
 ### **_tbc_**
 
