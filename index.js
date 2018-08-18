@@ -274,6 +274,7 @@ Preactor.prototype.reset = function reset (index) {
   var prevEmitData = this._transducers[this._transducers.length - 1]
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, this._transducers[index])
+  return this
 }
 
 Preactor.prototype.__defineGetter__('transducers', function () {
