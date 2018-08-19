@@ -120,6 +120,20 @@ Preactor.prototype.accumulateInterval =
 Preactor.prototype.accumulatePeriod =
   function accumulatePeriod (start, end, argsReducer) {
   throw new Error('not yet implemented')
+  if (!isUint(start)) throw new TypeError('start is not an unsigned integer')
+  if (!isUint(end)) throw new TypeError('end is not an unsigned integer')
+  if (typeof argsReducer !== 'function') argsReducer = latestWin
+  // ...
+  var reducedArgs
+  var self = this
+  var prevEmitData = this._transducers[this._transducers.length - 1]
+  function nextEmitData (...args) { // TODO
+
+  }
+  this._subject.removeListener(this._eventName, prevEmitData)
+  this._subject.addListener(this._eventName, nextEmitData)
+  this._transducers.push(nextEmitData)
+  return this
 }
 
 Preactor.prototype.debounce = function debounce (ms, unref, argsReducer) {
@@ -169,14 +183,14 @@ Preactor.prototype.delay = function delay (ms, unref) {
   return this
 }
 
-Preactor.prototype.distinct = function distinct (predicateFunc) {
-  if (typeof predicateFunc !== 'function') predicateFunc = naiveNeverBefore
+Preactor.prototype.distinct = function distinct (pred) {
+  if (typeof pred !== 'function') pred = naiveNeverBefore
   var accu = []
   var prevEmitData = this._transducers[this._transducers.length - 1]
   function nextEmitData (...args) {
-    var pred = predicateFunc(accu, args)
-    debug('pred', pred)
-    if (pred) prevEmitData(...args)
+    var distinct = pred(accu, args)
+    debug('distinct', distinct)
+    if (distinct) prevEmitData(...args)
     accu.push(args)
   }
   this._subject.removeListener(this._eventName, prevEmitData)
@@ -261,6 +275,7 @@ Preactor.prototype.reset = function reset (index) {
   var prevEmitData = this._transducers[this._transducers.length - 1]
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, this._transducers[index])
+  return this
 }
 
 Preactor.prototype.__defineGetter__('transducers', function () {

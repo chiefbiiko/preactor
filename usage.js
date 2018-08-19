@@ -1,4 +1,4 @@
-// npm run demo and hit localhost:9966 with a browser
+// FIXME: npm run demo and hit localhost:9966 with a browser
 
 var preactor = require('./index.js')
 

@@ -22,7 +22,7 @@ Wrap any `EventEmitter`, `EventTarget`, or `Promise` instance with the `Preactor
 
 Note that all transducers return `this`, meaning you can simply chain them, allowing for straight-forward event processing.
 
-The example below is for a browser context. Run `npm run demo`, hit `localhost:9966` with a browser, and type sth into the input field.
+<!-- The example below is for a browser context. Run `npm run demo`, hit `localhost:9966` with a browser, and type sth into the input field.
 
 ``` js
 var preactor = require('preactor')
@@ -39,7 +39,7 @@ window.onload = function () {
 
   document.body.appendChild(input)
 }
-```
+``` -->
 
 ***
 

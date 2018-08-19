@@ -31,10 +31,10 @@
   },
   "homepage": "https://github.com/chiefbiiko/preactor#readme",
   "devDependencies": {
-    "browserify": "^16.2.2",
-    "debug": "^3.1.0",
-    "tape": "^4.9.1",
-    "tape-run": "^4.0.0",
+    "browserify": "16.2.2",
+    "debug": "3.1.0",
+    "tape": "4.9.1",
+    "tape-run": "4.0.0",
     "wzrd": "^1.5.0"
   }
 }
