@@ -18,9 +18,11 @@ npm install --save preactor
 
 ## Usage
 
-Wrap any `EventEmitter`, `EventTarget`, or `Promise` instance with the `Preactor` type, then manipulate events/emits via transducers.
+Wrap any `EventEmitter`, `EventTarget`, or `Promise` instance with the `Preactor` type, then manipulate its events with the various `Preactor` prototype methods, *transducers*.
 
-The example below is for a browser context. Run `npm run demo` and hit `localhost:9966` with a browser.
+Note that all transducers return `this`, meaning you can simply chain them, allowing for straight-forward event processing.
+
+The example below is for a browser context. Run `npm run demo`, hit `localhost:9966` with a browser, and type sth into the input field.
 
 ``` js
 var preactor = require('preactor')
@@ -55,19 +57,19 @@ The returned `Preactor` instance itself is just a simple `EventEmitter`. Passing
 
 ### `Preactor.prototype.accumulate(n[, repeat][, argsReducer])`
 
-Accumulate `n` emits of the preactor's event using `argsReducer` to handle the propagation of arguments. `n` must be an unsigned integer, `repeat` a boolean, and `argsReducer` a function. The latter must have arity two, take two arrays as inputs, whereby the first parameter should have a default argument, i.e. `argsReducer(a = [], b)`, and return an array. `argsReducer` defaults to a *latestWin* implementation. `repeat` indicates whether to repeat accumulation or accumulate the first `n` emits only.
+Accumulate `n` emits of the preactor's event using `argsReducer` to handle the propagation of arguments. `n` must be an unsigned integer, `repeat` a boolean, and `argsReducer` a function. The latter must have arity two, take two arrays as inputs, whereby the first parameter should have a default argument, i.e. `argsReducer(a = [], b)`, and return an array. `argsReducer` defaults to a *latestWin* implementation. `repeat` indicates whether to repeat accumulation or only accumulate the first `n` emits, defaults to `false`.
 
 ### `Preactor.prototype.accumulateInterval(ms[, unref][, argsReducer])`
 
-Accumulate emits of the preactor's event within a recurring interval. `ms` must be an unsigned integer and indicates the interval duration. `unref` must be a boolean and indicates whether to call `Timeout.prototype.unref` in a node context. `argsReducer` should be a function and defaults to a *latestWin* implementation. It must have arity two, take two arrays as inputs, whereby the first parameter should have a default argument, i.e. `argsReducer(a = [], b)`, and return an array.
+Accumulate emits of the preactor's event within a recurring interval. `ms` must be an unsigned integer and indicates the interval duration. `unref` must be a boolean and indicates whether to call `Timeout.prototype.unref` in a node context, defaults to `false`. `argsReducer` should be a function and defaults to a *latestWin* implementation. It must have arity two, take two arrays as inputs, whereby the first parameter should have a default argument, i.e. `argsReducer(a = [], b)`, and return an array.
 
 ### `Preactor.prototype.debounce(ms[, unref][, argsReducer])`
 
-Debounces the preactor's event by `ms`. Unreference internal timers by passing a truthy non-function second argument. If passed `argsReducer` must be a function and defaults to a *latestWin* implementation. It must have arity two, take two arrays as inputs, whereby the first parameter should have a default argument, i.e. `argsReducer(a = [], b)`, and return an array.
+Debounces the preactor's event by `ms`. Unreference internal timers by passing a truthy non-function second argument which defaults to `false`. If passed `argsReducer` must be a function and defaults to a *latestWin* implementation. It must have arity two, take two arrays as inputs, whereby the first parameter should have a default argument, i.e. `argsReducer(a = [], b)`, and return an array.
 
 ### `Preactor.prototype.delay(ms[, unref])`
 
-Delay events by `ms`. Pass `unref` truthy and the internal timers will be unreferenced.
+Delay events by `ms`. Pass `unref` truthy and the internal timers will be unreferenced, defaults to `false`.
 
 ### `Preactor.prototype.distinct(pred)`
 
@@ -76,6 +78,10 @@ Only allow emits that pass a predicate test. `pred` must be a function and defau
 ### `Preactor.prototype.limit(n)`
 
 Limit the number of emits of this preactor instance to `n`.
+
+### `Preactor.prototype.mask(mask, recycle)`
+
+Cpntrol whether a `Preactor` instance reemits its emitter's events according to a boolean sequence. `mask` must be an array, which is used as a boolean schedule that indicates whether to or not have the preactor reemit its emitter's events. `recycle` indicates whether the preactor should repeat reemitting events according to `mask` or to have it stop reemitting for good.
 
 ### **_tbc_**
 
