@@ -4,7 +4,7 @@
 
 ***
 
-`preactor` allows to develop event-heavy and reactive applications in a seemless manner. Its manifestation, the `Preactor` type, an `EventEmitter`, has a variety of methods for manipulating the process of an event being emitted. All `Preactor.prototype` methods may be called *transducers*.
+`preactor` allows to develop event-heavy and reactive applications in a seemless manner. Its manifestation, the `Preactor` type, an `EventEmitter`, has a variety of methods for manipulating the process of an event being emitted. The project is inspired by the evolving `Observable` type. Apart from initial inspiration there is no further relation to `Observable` implementations out in the wild. Note that `preactor` can be used in `node` or a browser.
 
 ***
 
@@ -22,7 +22,11 @@ Wrap any `EventEmitter`, `EventTarget`, or `Promise` instance with the `Preactor
 
 Note that all transducers return `this`, meaning you can simply chain them, allowing for straight-forward event processing.
 
-<!-- The example below is for a browser context. Run `npm run demo`, hit `localhost:9966` with a browser, and type sth into the input field.
+There is one example for a browser context and another one for node.
+
+To check out the browser demo run `npm run browser-demo` or open `./browser_usage.html` with a browser.
+
+Check out the node demo by running `npm run node-demo` or `node ./node_usage.js`.
 
 ``` js
 var preactor = require('preactor')
@@ -39,7 +43,7 @@ window.onload = function () {
 
   document.body.appendChild(input)
 }
-``` -->
+```
 
 ***
 
@@ -81,7 +85,15 @@ Limit the number of emits of this preactor instance to `n`.
 
 ### `Preactor.prototype.mask(mask, recycle)`
 
-Cpntrol whether a `Preactor` instance reemits its emitter's events according to a boolean sequence. `mask` must be an array, which is used as a boolean schedule that indicates whether to or not have the preactor reemit its emitter's events. `recycle` indicates whether the preactor should repeat reemitting events according to `mask` or to have it stop reemitting for good.
+Control whether a `Preactor` instance reemits its emitter's events according to a boolean sequence. `mask` must be an array, which is used as a boolean schedule that indicates whether to or not have the preactor reemit its emitter's events. `recycle` indicates whether the preactor should repeat reemitting events according to `mask` or to have it stop reemitting for good.
+
+### `Preactor.prototype.notWhitin(start, end)`
+
+Have a `Preactor` instance reemit events of its subject only if these are not emitted within the specified time frame. `start` and `end` must be unsigned integers representing the start and end of the *ignore* time frame as unix timestamps.
+
+### `Preactor.prototype.onlyWhitin(start, end)`
+
+Have a `Preactor` instance reemit events of its subject only if these are emitted within the specified time frame. `start` and `end` must be unsigned integers representing the start and end of the time frame as unix timestamps.
 
 ### **_tbc_**
 

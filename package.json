@@ -9,7 +9,8 @@
     "test": "npm run node-test && npm run browser-test",
     "node-test": "tape ./test.js",
     "browser-test": "browserify ./test.browser.js | tape-run",
-    "demo": "wzrd ./usage.js"
+    "node-demo": "node ./node_usage.js",
+    "browser-demo": "echo hit \"localhost:3644\" with a browser! && node -e \"var F=require('fs').readFileSync('./browser_usage.html');require('http').createServer((i,o)=>o.end(F)).listen(3644)\""
   },
   "repository": {
     "type": "git",

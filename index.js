@@ -51,6 +51,7 @@ function Preactor (subject, eventName, errorName) {
 
 inherits(Preactor, EventEmitter)
 
+// FIXME: if repeat false second repetition has old accumulator -> unregisterin
 Preactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
   if (!isUint(n)) throw new TypeError('n is not an unsigned integer')
   if (typeof repeat === 'function') {

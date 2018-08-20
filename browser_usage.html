@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+  <!-- source the browser bundle from the filesystem or unpkg cdn -->
+  <!-- <script src="./browser.js"></script> -->
+  <script src="https://unpkg.com/preactor@0.7.0/browser.js"></script>
+  <script>
+  window.onload = function () {
+    var input = document.createElement('input')
+    input.placeholder = 'type 2 c keyup debounce'
+
+    preactor(input, 'keyup')
+      .debounce(1000)
+      .on('keyup', function (e) {
+        alert('debounced:: ' + e.target.value)
+      })
+
+    document.body.appendChild(input)
+  }
+  </script>
+</head>
+<body></body>
+</html>
