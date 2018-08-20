@@ -272,6 +272,7 @@ Preactor.prototype.clearOwnInterval = function clearOwnInterval () {
 Preactor.prototype.reset = function reset (index) {
   if(!isUint(index)) throw new TypeError('index is not an unsigned integer')
   if (index >= this._transducers.length) throw new TypeError('invalid index')
+  if (!this._transducers.length) return this
   var prevEmitData = this._transducers[this._transducers.length - 1]
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, this._transducers[index])
@@ -279,7 +280,7 @@ Preactor.prototype.reset = function reset (index) {
 }
 
 Preactor.prototype.__defineGetter__('transducers', function () {
-  return this._transducers // [ ...this._transducers ] to copy?
+  return this._transducers
 })
 
 

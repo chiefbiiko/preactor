@@ -10,8 +10,18 @@
 
 ## Get it!
 
+`node`:
+
 ```
 npm install --save preactor
+```
+
+browser:
+
+``` html
+<!-- source the browser bundle from the filesystem or unpkg cdn -->
+<!-- <script src="./browser.js"></script> -->
+<script src="https://unpkg.com/preactor@0.7.0/browser.js"></script>
 ```
 
 ***
@@ -22,27 +32,24 @@ Wrap any `EventEmitter`, `EventTarget`, or `Promise` instance with the `Preactor
 
 Note that all transducers return `this`, meaning you can simply chain them, allowing for straight-forward event processing.
 
-There is one example for a browser context and another one for node.
+There is one example for a browser context and another one for `node`.
 
 To check out the browser demo run `npm run browser-demo` or open `./browser_usage.html` with a browser.
 
-Check out the node demo by running `npm run node-demo` or `node ./node_usage.js`.
+Check out the `node` demo by running `npm run node-demo` or `node ./node_usage.js`.
+
+`node` demo:
 
 ``` js
-var preactor = require('preactor')
+const preactor = require('preactor')
 
-window.onload = function () {
-  var input = document.createElement('input')
-  input.placeholder = 'type 2 c keyup debounce'
+console.log('type sth and hit enter multiple times...')
 
-  preactor(input, 'keyup')
-    .debounce(1000)
-    .on('keyup', function (e) {
-      alert('debounced:: ' + e.target.value)
-    })
-
-  document.body.appendChild(input)
-}
+preactor(process.stdin, 'data')
+  .accumulate(2, true, (accu = [ '' ], args) => {
+    return [ accu[0] + args[0].toString().trim() ]
+  })
+  .on('data', accu => console.log('accumulated data:', accu))
 ```
 
 ***
@@ -95,7 +102,21 @@ Have a `Preactor` instance reemit events of its subject only if these are not em
 
 Have a `Preactor` instance reemit events of its subject only if these are emitted within the specified time frame. `start` and `end` must be unsigned integers representing the start and end of the time frame as unix timestamps.
 
-### **_tbc_**
+### `Preactor.prototype.clearOwnTimeout()`
+
+Clear the current internal timeout timer. Useful for teardown work.
+
+### `Preactor.prototype.clearOwnInterval()`
+
+Clear the current internal interval timer. Useful for teardown work.
+
+### `Preactor.prototype.reset(index)`
+
+Reset the `Preactor` instance's effective transducer to a previous one. `index` must be an unsigned integer as it indicates the index of the transducer to put into effect (indexing is zero-based), thus the first transducer that was applied on the `Preactor` instance has index `0`, the second `1`, and so forth.
+
+### `Preactor.prototype.transducers`
+
+Get the internal transducers array. Useful for inferring the current transducer index in prep for using `Preactor.prototype.reset(index)`.
 
 ***
 
