@@ -343,10 +343,31 @@ tape('distinct - Preactor.prototype.distinct', function (t) {
   emitter.emit('distinct', 3)
 })
 
+tape('Preactor.prototype.filter', function (t) {
+  var emitter = new EventEmitter()
+  var preactor = new Preactor(emitter, 'fraud')
+  var pending = 3
+
+  preactor
+    .filter(function (...args) {
+      return args[0] >= 36
+    })
+    .on('fraud', function (num) {
+      t.true(num >= 36, 'filtered')
+      if (!--pending) t.end()
+    })
+
+  emitter.emit('fraud', 1)
+  emitter.emit('fraud', 2)
+  emitter.emit('fraud', 36)
+  emitter.emit('fraud', 44)
+  emitter.emit('fraud', 3)
+  emitter.emit('fraud', 419)
+})
+
 tape('default accumulate - Preactor.prototype.accumulate', function (t) {
   var emitter = new EventEmitter()
   var preactor = new Preactor(emitter, 'accumulate')
-  var count = 0
 
   preactor
     .accumulate(2)
@@ -359,7 +380,32 @@ tape('default accumulate - Preactor.prototype.accumulate', function (t) {
   emitter.emit('accumulate', 1)
 })
 
-tape('custom argsReducer accumulate - Preactor.prototype.accumulate', function (t) {
+tape('!repeat - Preactor.prototype.accumulate', function (t) {
+  var emitter = new EventEmitter()
+
+  function argsReducer (accu = [ 0 ], args) { // should set a default accu
+    return [ accu[0] + args[0] ] // and return an array
+  }
+
+  var preactor = new Preactor(emitter, 'accumulate')
+    .accumulate(2, false, argsReducer)
+
+  preactor
+    .once('accumulate', function (reducedNumber) {
+      t.is(reducedNumber, 2, 'reducedNumber is ' + reducedNumber)
+      preactor.once('accumulate', function () {
+        t.fail('should be unreachable')
+      })
+      emitter.emit('accumulate', 99)
+      emitter.emit('accumulate', 99)
+      setTimeout(t.end, 200)
+    })
+
+  emitter.emit('accumulate', 1)
+  emitter.emit('accumulate', 1)
+})
+
+tape('custom argsReducer - Preactor.prototype.accumulate', function (t) {
   var emitter = new EventEmitter()
   var preactor = new Preactor(emitter, 'accumulate')
   var count = 0

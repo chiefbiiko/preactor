@@ -86,6 +86,10 @@ Delay events by `ms`. Pass `unref` truthy and the internal timers will be unrefe
 
 Only allow emits that pass a predicate test. `pred` must be a function and defaults to a *naiveNeverBefore* implementation. It must have arity two, take two arrays as inputs, whereby the first parameter should have a default argument, i.e. `pred(accu = [], args)`, and return a boolean.
 
+### `Preactor.prototype.filter(pred)`
+
+Only allow emits that pass a predicate test. `pred` must be a function, there is no default implementation. It must have arity two, take two arrays as inputs, whereby the first parameter should have a default argument, i.e. `pred(accu = [], args)`, and return a boolean.
+
 ### `Preactor.prototype.limit(n)`
 
 Limit the number of emits of this preactor instance to `n`.

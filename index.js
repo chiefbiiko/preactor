@@ -72,7 +72,7 @@ Preactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
     if (!repeat && count === n) {
       null // unregisterin?
       prevEmitData(...reducedArgs)
-    } else if (count % n === 0) {
+    } else if (repeat && count % n === 0) {
       prevEmitData(...reducedArgs)
       reducedArgs = undefined
     }
@@ -199,6 +199,18 @@ Preactor.prototype.distinct = function distinct (pred) {
   return this
 }
 
+Preactor.prototype.filter = function filter (pred) {
+  if (typeof pred !== 'function') throw new TypeError('pred is not a function')
+  var prevEmitData = this._transducers[this._transducers.length - 1]
+  function nextEmitData (...args) {
+    if (pred(...args)) prevEmitData(...args)
+  }
+  this._subject.removeListener(this._eventName, prevEmitData)
+  this._subject.addListener(this._eventName, nextEmitData)
+  this._transducers.push(nextEmitData)
+  return this
+}
+
 Preactor.prototype.limit = function limit (n) {
   if (!isUint(n)) throw new TypeError('n is not an unsigned integer')
   var i = 0
@@ -282,7 +294,5 @@ Preactor.prototype.reset = function reset (index) {
 Preactor.prototype.__defineGetter__('transducers', function () {
   return this._transducers
 })
-
-
 
 module.exports = Preactor
