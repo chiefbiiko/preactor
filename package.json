@@ -1,6 +1,6 @@
 {
   "name": "preactor",
-  "version": "0.8.0",
+  "version": "0.8.2",
   "description": "preactors",
   "unpkg": "./browser.js",
   "main": "./index.js",
@@ -10,7 +10,7 @@
     "node-test": "tape ./test.js",
     "browser-test": "browserify ./test.browser.js | tape-run",
     "node-demo": "node ./node_usage.js",
-    "browser-demo": "echo hit \"localhost:3644\" with a browser! && node -e \"var F=require('fs').readFileSync('./browser_usage.html');require('http').createServer((i,o)=>o.end(F)).listen(3644)\""
+    "browser-demo": "node -e \"var F=require('fs').readFileSync('./browser_usage.html');require('http').createServer((i,o)=>o.end(F)).listen(3644,()=>console.log('hit localhost:3644 with a browser'))\""
   },
   "repository": {
     "type": "git",

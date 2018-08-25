@@ -51,7 +51,6 @@ function Preactor (subject, eventName, errorName) {
 
 inherits(Preactor, EventEmitter)
 
-// FIXME: if repeat false second repetition has old accumulator -> unregisterin
 Preactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
   if (!isUint(n)) throw new TypeError('n is not an unsigned integer')
   if (typeof repeat === 'function') {
@@ -61,6 +60,7 @@ Preactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
     argsReducer = latestWin
   }
   repeat = !!repeat
+  var self = this
   var count = 0
   var reducedArgs
   var prevEmitData = this._transducers[this._transducers.length - 1]
@@ -70,7 +70,7 @@ Preactor.prototype.accumulate = function accumulate (n, repeat, argsReducer) {
     debug('reducedArgs', reducedArgs)
     count++
     if (!repeat && count === n) {
-      null // unregisterin?
+      self.removeListener(self._eventName, nextEmitData)
       prevEmitData(...reducedArgs)
     } else if (repeat && count % n === 0) {
       prevEmitData(...reducedArgs)
@@ -213,11 +213,12 @@ Preactor.prototype.filter = function filter (pred) {
 
 Preactor.prototype.limit = function limit (n) {
   if (!isUint(n)) throw new TypeError('n is not an unsigned integer')
+  var self = this
   var i = 0
   var prevEmitData = this._transducers[this._transducers.length - 1]
   function nextEmitData (...args) {
     if (i++ < n) prevEmitData(...args)
-    else null // unregisterin?
+    else self.removeListener(self._eventName, nextEmitData)
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
@@ -228,13 +229,14 @@ Preactor.prototype.limit = function limit (n) {
 Preactor.prototype.mask = function mask (mask, recycle) {
   if (!Array.isArray(mask)) throw new TypeError('mask is not an array')
   recycle = recycle !== false
+  var self = this
   var i = -1
   var prevEmitData = this._transducers[this._transducers.length - 1]
   function nextEmitData (...args) {
     if (++i === mask.length && recycle) i = 0
     var cur = mask[i]
     if (cur) prevEmitData(...args)
-    if (!cur && !recycle) null // unregisterin?
+    if (!cur && !recycle) self.removeListener(self._eventName, nextEmitData)
    }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)
@@ -259,11 +261,12 @@ Preactor.prototype.notWithin = function notWithin (start, end) {
 Preactor.prototype.onlyWithin = function onlyWithin (start, end) {
   if (!isUint(start)) throw new TypeError('start is not an unsigned integer')
   else if (!isUint(end)) throw new TypeError('end is not an unsigned integer')
+  var self = this
   var prevEmitData = this._transducers[this._transducers.length - 1]
   function nextEmitData (...args) {
     var now = Date.now()
     if (now >= start && now <= end) prevEmitData(...args)
-    else if (now > end) null // unregisterin?
+    else if (now > end) self.removeListener(self._eventName, nextEmitData)
   }
   this._subject.removeListener(this._eventName, prevEmitData)
   this._subject.addListener(this._eventName, nextEmitData)

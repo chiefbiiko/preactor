@@ -18,11 +18,14 @@ npm install --save preactor
 
 browser:
 
+Source the browser bundle from the filesystem or unpkg cdn:
+
 ``` html
-<!-- source the browser bundle from the filesystem or unpkg cdn -->
 <!-- <script src="./browser.js"></script> -->
-<script src="https://unpkg.com/preactor@0.7.0/browser.js"></script>
+<script src="https://unpkg.com/preactor"></script>
 ```
+
+Find the UMD build @ `window.preactor`.
 
 ***
 
@@ -88,7 +91,7 @@ Only allow emits that pass a predicate test. `pred` must be a function and defau
 
 ### `Preactor.prototype.filter(pred)`
 
-Only allow emits that pass a predicate test. `pred` must be a function, there is no default implementation. It must have arity two, take two arrays as inputs, whereby the first parameter should have a default argument, i.e. `pred(accu = [], args)`, and return a boolean.
+Only allow emits that pass a predicate test. `pred` must be a function, there is no default implementation. `pred` gets passed all arguments that a subject emits with as an event, and must return a boolean that indicates whether to have the preactor reemit the event and corresponding arguments.
 
 ### `Preactor.prototype.limit(n)`
 
