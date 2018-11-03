@@ -8,7 +8,7 @@
     "bundle": "browserify ./index.js -s preactor -o ./browser.js",
     "test": "npm run node-test && npm run browser-test",
     "node-test": "tape ./test.js",
-    "browser-test": "browserify ./test.browser.js | tape-run",
+    "browser-test": "browserify ./test.browser.js | tape-puppet",
     "node-demo": "node ./node_usage.js",
     "browser-demo": "node -e \"var F=require('fs').readFileSync('./browser_usage.html');require('http').createServer((i,o)=>o.end(F)).listen(3644,()=>console.log('hit localhost:3644 with a browser'))\""
   },
@@ -32,9 +32,8 @@
   },
   "homepage": "https://github.com/chiefbiiko/preactor#readme",
   "devDependencies": {
-    "browserify": "16.2.2",
-    "debug": "3.1.0",
-    "tape": "4.9.1",
-    "tape-run": "4.0.0"
+    "browserify": "^16.2.3",
+    "tape": "^4.9.1",
+    "tape-puppet": "^0.1.5"
   }
 }

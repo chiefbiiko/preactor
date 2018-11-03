@@ -9,7 +9,7 @@ var {
   promiseToEmitter
 } = require('./utils.js')
 
-var debug = require('debug')('preactor')
+var debug = function () {} // require('debug')('preactor')
 
 function Preactor (subject, eventName, errorName) {
   if (!(this instanceof Preactor)) {
