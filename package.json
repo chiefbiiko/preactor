@@ -1,6 +1,6 @@
 {
   "name": "preactor",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "preactors",
   "unpkg": "./browser.js",
   "main": "./index.js",
